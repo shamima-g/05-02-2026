@@ -58,7 +58,7 @@ export default async function ForbiddenPage({
             Return to Home
           </Link>
           <Link
-            href="/auth/signout"
+            href="/login"
             className="text-sm text-gray-600 hover:text-gray-800"
           >
             Sign out and switch accounts

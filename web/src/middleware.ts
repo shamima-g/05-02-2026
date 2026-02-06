@@ -2,13 +2,12 @@
  * Next.js Middleware for Route Protection
  *
  * Handles authentication checks and redirects for protected routes.
+ * Reads the accessToken cookie directly from the request.
  * Unauthenticated users are redirected to /login.
- * Authenticated users trying to access /login are redirected to /dashboard.
+ * Authenticated users trying to access /login are redirected to /.
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-
-import { isAuthenticatedRequest } from '@/lib/auth/auth-helpers';
 
 /**
  * List of protected route patterns that require authentication
@@ -69,14 +68,15 @@ export async function middleware(
     return undefined;
   }
 
-  // Check authentication status
-  const isAuthenticated = await isAuthenticatedRequest(request);
+  // Check authentication status via accessToken cookie
+  const accessToken = request.cookies.get('accessToken')?.value;
+  const isAuthenticated = !!accessToken;
 
   // Handle authenticated users
   if (isAuthenticated) {
     // Redirect authenticated users away from login page
     if (isPublicRoute(pathname)) {
-      return NextResponse.redirect(new URL('/dashboard', request.url));
+      return NextResponse.redirect(new URL('/', request.url));
     }
     // Allow access to all other routes
     return undefined;

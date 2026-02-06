@@ -1,33 +1,42 @@
 'use client';
 
-import {
-  signIn as nextAuthSignIn,
-  signOut as nextAuthSignOut,
-} from 'next-auth/react';
-
-export { useSession } from 'next-auth/react';
+import { login as apiLogin, getCurrentUser } from '@/lib/api/auth';
+import { resetSessionTimeout } from '@/lib/auth/session';
+import type { AuthUser } from '@/types/auth';
 
 export async function signIn(
-  email: string,
+  username: string,
   password: string,
 ): Promise<{ error?: string; ok: boolean }> {
   try {
-    const result = await nextAuthSignIn('credentials', {
-      email,
-      password,
-      redirect: false,
-    });
-
-    if (result?.error) {
-      return { error: 'Invalid credentials', ok: false };
-    }
-
+    const response = await apiLogin({ username, password });
+    document.cookie = `accessToken=${response.accessToken}; path=/; max-age=${response.expiresIn}`;
+    document.cookie = `refreshToken=${response.refreshToken}; path=/; max-age=${response.expiresIn * 2}`;
+    resetSessionTimeout();
     return { ok: true };
-  } catch {
-    return { error: 'An error occurred during sign in', ok: false };
+  } catch (err: unknown) {
+    const message =
+      err && typeof err === 'object' && 'message' in err
+        ? (err as { message: string }).message
+        : 'Invalid credentials';
+    return { error: message, ok: false };
   }
 }
 
 export async function signOut(): Promise<void> {
-  await nextAuthSignOut({ redirect: true, callbackUrl: '/auth/signin' });
+  document.cookie =
+    'accessToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
+  document.cookie =
+    'refreshToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
+  localStorage.removeItem('lastActivityTime');
+  window.location.href = '/login';
+}
+
+export async function getUser(): Promise<AuthUser | null> {
+  try {
+    const user = await getCurrentUser();
+    return user as AuthUser;
+  } catch {
+    return null;
+  }
 }

@@ -1,7 +1,7 @@
 /**
  * RoleGate Component
  *
- * A server component for conditional rendering based on user role.
+ * A server component for conditional rendering based on user role or permissions.
  * Use this component to show/hide UI elements based on the user's authorization level.
  *
  * IMPORTANT: This component performs server-side authorization checks.
@@ -10,26 +10,26 @@
  * @example
  * ```tsx
  * // Basic usage - single role
- * <RoleGate allowedRoles={[UserRole.ADMIN]}>
+ * <RoleGate allowedRoles={[UserRole.Administrator]}>
  *   <AdminPanel />
  * </RoleGate>
  *
  * // Multiple allowed roles
- * <RoleGate allowedRoles={[UserRole.ADMIN, UserRole.POWER_USER]}>
+ * <RoleGate allowedRoles={[UserRole.Administrator, UserRole.OperationsLead]}>
  *   <ManagementTools />
  * </RoleGate>
  *
  * // With fallback content
  * <RoleGate
- *   allowedRoles={[UserRole.ADMIN]}
+ *   allowedRoles={[UserRole.Administrator]}
  *   fallback={<p>You don't have permission to view this content.</p>}
  * >
  *   <AdminPanel />
  * </RoleGate>
  *
- * // With minimum role (hierarchy-based)
- * <RoleGate minimumRole={UserRole.POWER_USER}>
- *   <AdvancedFeatures />
+ * // Permission-based
+ * <RoleGate requiredPermission="users.create">
+ *   <CreateUserButton />
  * </RoleGate>
  *
  * // Any authenticated user
@@ -39,8 +39,8 @@
  * ```
  */
 
-import { auth } from '@/lib/auth/auth';
-import { hasAnyRole, hasMinimumRole } from '@/lib/auth/auth-helpers';
+import { getSession } from '@/lib/auth/auth-server';
+import { hasAnyRole, hasPermission } from '@/lib/auth/auth-helpers';
 import { UserRole } from '@/types/roles';
 
 export type RoleGateProps = {
@@ -56,15 +56,14 @@ export type RoleGateProps = {
   allowedRoles?: UserRole[];
 
   /**
-   * Minimum role level required (hierarchy-based).
-   * User's role must be at or above this level.
+   * Required permission (e.g., "users.create").
    * Takes precedence over allowedRoles if both are provided.
    */
-  minimumRole?: UserRole;
+  requiredPermission?: string;
 
   /**
    * If true, only requires authentication (no specific role).
-   * Takes precedence over allowedRoles and minimumRole.
+   * Takes precedence over allowedRoles and requiredPermission.
    */
   requireAuth?: boolean;
 
@@ -76,9 +75,9 @@ export type RoleGateProps = {
 };
 
 /**
- * Server component that conditionally renders children based on user role.
+ * Server component that conditionally renders children based on user role or permissions.
  *
- * Authorization checks are performed server-side using the session.
+ * Authorization checks are performed server-side using the JWT token.
  * This ensures that role-based UI visibility cannot be bypassed client-side.
  *
  * @param props - RoleGate configuration
@@ -87,25 +86,25 @@ export type RoleGateProps = {
 export async function RoleGate({
   children,
   allowedRoles,
-  minimumRole,
+  requiredPermission,
   requireAuth = false,
   fallback = null,
 }: RoleGateProps): Promise<React.ReactNode> {
-  const session = await auth();
+  const user = await getSession();
 
   // Check if user is authenticated
-  if (!session?.user) {
+  if (!user) {
     return fallback;
   }
 
-  // If only authentication is required (no specific role)
-  if (requireAuth && !allowedRoles && !minimumRole) {
+  // If only authentication is required (no specific role/permission)
+  if (requireAuth && !allowedRoles && !requiredPermission) {
     return children;
   }
 
-  // Check minimum role requirement (hierarchy-based)
-  if (minimumRole) {
-    if (hasMinimumRole(session.user, minimumRole)) {
+  // Check permission requirement (takes precedence)
+  if (requiredPermission) {
+    if (hasPermission(user, requiredPermission)) {
       return children;
     }
     return fallback;
@@ -113,7 +112,12 @@ export async function RoleGate({
 
   // Check allowed roles (any match)
   if (allowedRoles && allowedRoles.length > 0) {
-    if (hasAnyRole(session.user, allowedRoles)) {
+    if (
+      hasAnyRole(
+        user,
+        allowedRoles.map((r) => r.toString()),
+      )
+    ) {
       return children;
     }
     return fallback;

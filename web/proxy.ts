@@ -13,15 +13,9 @@
  *
  * Security Note:
  * Do NOT add authentication or authorization logic here. Use Server Components instead.
- *
- * See:
- * - https://nextjs.org/docs/app/api-reference/file-conventions/proxy
- * - https://nextjs.org/docs/messages/middleware-to-proxy
  */
 
 import { NextResponse } from 'next/server';
-
-import { auth } from '@/lib/auth/auth';
 
 import type { NextRequest } from 'next/server';
 
@@ -29,24 +23,19 @@ import type { NextRequest } from 'next/server';
  * Proxy function - handles lightweight request interception
  *
  * Current responsibilities:
- * - Redirect authenticated users away from auth pages (signin/signup)
+ * - Redirect authenticated users away from /login
  *
  * NOT handled here (moved to layouts):
- * - Authentication checks → See app/dashboard/layout.tsx
- * - Role-based access control → See app/admin/layout.tsx, app/power-user/layout.tsx
+ * - Authentication checks → See app/(protected)/layout.tsx
+ * - Role-based access control → See RoleGate component
  */
 export async function proxy(request: NextRequest): Promise<NextResponse> {
   const { pathname } = request.nextUrl;
 
-  // Define auth routes (signin, signup, etc.)
-  const authRoutes = ['/auth/signin', '/auth/signup'];
-  const isAuthRoute = authRoutes.some((route) => pathname.startsWith(route));
-
-  // Redirect authenticated users away from auth pages
-  if (isAuthRoute) {
-    const session = await auth();
-    if (session) {
-      // User is already logged in, redirect to home
+  // Redirect authenticated users away from login page
+  if (pathname === '/login') {
+    const accessToken = request.cookies.get('accessToken')?.value;
+    if (accessToken) {
       return NextResponse.redirect(new URL('/', request.url));
     }
   }

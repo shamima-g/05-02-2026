@@ -89,7 +89,7 @@ describe('Login Page', () => {
       });
 
       await waitFor(() => {
-        expect(mockRouter.push).toHaveBeenCalledWith('/dashboard');
+        expect(mockRouter.push).toHaveBeenCalledWith('/');
       });
     });
   });
@@ -220,7 +220,7 @@ describe('Login Page', () => {
       render(<LoginPage />);
 
       await waitFor(() => {
-        expect(mockRouter.replace).toHaveBeenCalledWith('/dashboard');
+        expect(mockRouter.replace).toHaveBeenCalledWith('/');
       });
     });
   });

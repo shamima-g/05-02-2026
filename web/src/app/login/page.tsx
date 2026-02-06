@@ -41,7 +41,7 @@ export default function LoginPage() {
       try {
         await getCurrentUser();
         // If getCurrentUser succeeds, user is authenticated
-        router.replace('/dashboard');
+        router.replace('/');
       } catch {
         // User is not authenticated, stay on login page
       }
@@ -79,7 +79,7 @@ export default function LoginPage() {
       resetSessionTimeout();
 
       // Redirect to dashboard
-      router.push('/dashboard');
+      router.push('/');
     } catch (err) {
       // Handle authentication errors
       if (err && typeof err === 'object' && 'message' in err) {

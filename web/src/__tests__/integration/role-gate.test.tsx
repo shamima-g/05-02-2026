@@ -2,69 +2,50 @@
  * Integration Test: RoleGate Component
  *
  * Tests for the RoleGate server component that conditionally renders
- * UI elements based on user role authorization.
+ * UI elements based on user role and permission authorization.
  */
 
 import { vi, describe, it, expect, beforeEach } from 'vitest';
-import type { Session } from 'next-auth';
-
-type MockAuthFn = ReturnType<typeof vi.fn<() => Promise<Session | null>>>;
-
-// Mock next-auth before imports
-vi.mock('next-auth', () => ({
-  __esModule: true,
-  default: vi.fn(),
-}));
-
-vi.mock('next-auth/react', () => ({
-  __esModule: true,
-  SessionProvider: ({ children }: { children: React.ReactNode }) => children,
-  useSession: vi.fn(() => ({ data: null, status: 'unauthenticated' })),
-  signIn: vi.fn(),
-  signOut: vi.fn(),
-}));
-
-vi.mock('@/lib/auth/auth', () => ({
-  auth: vi.fn(() => Promise.resolve(null)),
-  handlers: { GET: vi.fn(), POST: vi.fn() },
-  signIn: vi.fn(),
-  signOut: vi.fn(),
-}));
-
-import { auth } from '@/lib/auth/auth';
 import { UserRole } from '@/types/roles';
+import type { AuthUser } from '@/types/auth';
+
+// Mock auth-server before imports
+vi.mock('@/lib/auth/auth-server', () => ({
+  getSession: vi.fn(),
+}));
+
+import { getSession } from '@/lib/auth/auth-server';
 import { RoleGate } from '@/components/RoleGate';
 
-// Helper to create mock sessions
-function createMockSession(
-  role: UserRole,
-  overrides?: Partial<Session['user']>,
-): Session {
+const mockGetSession = getSession as ReturnType<typeof vi.fn>;
+
+function createMockUser(
+  roles: UserRole[],
+  permissions: string[] = [],
+): AuthUser {
   return {
-    user: {
-      id: '1',
-      email: `${role.toLowerCase()}@example.com`,
-      name: `${role} User`,
-      role,
-      ...overrides,
-    },
-    expires: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+    id: 'user-1',
+    username: 'testuser',
+    displayName: 'Test User',
+    email: 'test@example.com',
+    roles,
+    permissions,
   };
 }
 
 describe('RoleGate Component', () => {
-  const mockAuth = auth as unknown as MockAuthFn;
-
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
   describe('renders children when authorized', () => {
     it('should render when user has exact required role', async () => {
-      mockAuth.mockResolvedValue(createMockSession(UserRole.ADMIN));
+      mockGetSession.mockResolvedValue(
+        createMockUser([UserRole.Administrator]),
+      );
 
       const result = await RoleGate({
-        allowedRoles: [UserRole.ADMIN],
+        allowedRoles: [UserRole.Administrator],
         children: <div>Admin Panel</div>,
       });
 
@@ -72,29 +53,36 @@ describe('RoleGate Component', () => {
     });
 
     it('should render when user role is in allowedRoles list', async () => {
-      mockAuth.mockResolvedValue(createMockSession(UserRole.POWER_USER));
+      mockGetSession.mockResolvedValue(
+        createMockUser([UserRole.OperationsLead]),
+      );
 
       const result = await RoleGate({
-        allowedRoles: [UserRole.ADMIN, UserRole.POWER_USER],
+        allowedRoles: [UserRole.Administrator, UserRole.OperationsLead],
         children: <div>Management Tools</div>,
       });
 
       expect(result).toEqual(<div>Management Tools</div>);
     });
 
-    it('should render when user meets minimumRole requirement', async () => {
-      mockAuth.mockResolvedValue(createMockSession(UserRole.ADMIN));
+    it('should render when user has required permission', async () => {
+      mockGetSession.mockResolvedValue(
+        createMockUser(
+          [UserRole.Analyst],
+          ['view_portfolios', 'edit_master_data'],
+        ),
+      );
 
       const result = await RoleGate({
-        minimumRole: UserRole.POWER_USER,
-        children: <div>Advanced Features</div>,
+        requiredPermission: 'view_portfolios',
+        children: <div>Portfolio View</div>,
       });
 
-      expect(result).toEqual(<div>Advanced Features</div>);
+      expect(result).toEqual(<div>Portfolio View</div>);
     });
 
     it('should render for any authenticated user with requireAuth', async () => {
-      mockAuth.mockResolvedValue(createMockSession(UserRole.READ_ONLY));
+      mockGetSession.mockResolvedValue(createMockUser([UserRole.ReadOnly]));
 
       const result = await RoleGate({
         requireAuth: true,
@@ -105,7 +93,7 @@ describe('RoleGate Component', () => {
     });
 
     it('should render when no role requirements specified', async () => {
-      mockAuth.mockResolvedValue(createMockSession(UserRole.STANDARD_USER));
+      mockGetSession.mockResolvedValue(createMockUser([UserRole.Analyst]));
 
       const result = await RoleGate({
         children: <div>Default Content</div>,
@@ -117,47 +105,35 @@ describe('RoleGate Component', () => {
 
   describe('hides children when unauthorized', () => {
     it('should return null when user lacks required role', async () => {
-      mockAuth.mockResolvedValue(createMockSession(UserRole.READ_ONLY));
+      mockGetSession.mockResolvedValue(createMockUser([UserRole.ReadOnly]));
 
       const result = await RoleGate({
-        allowedRoles: [UserRole.ADMIN],
+        allowedRoles: [UserRole.Administrator],
         children: <div>Admin Panel</div>,
       });
 
       expect(result).toBeNull();
     });
 
-    it('should return null when user does not meet minimumRole', async () => {
-      mockAuth.mockResolvedValue(createMockSession(UserRole.READ_ONLY));
+    it('should return null when user lacks required permission', async () => {
+      mockGetSession.mockResolvedValue(
+        createMockUser([UserRole.ReadOnly], ['view_portfolios']),
+      );
 
       const result = await RoleGate({
-        minimumRole: UserRole.POWER_USER,
-        children: <div>Advanced Features</div>,
+        requiredPermission: 'manage_users',
+        children: <div>User Management</div>,
       });
 
       expect(result).toBeNull();
     });
 
     it('should return null for unauthenticated user', async () => {
-      mockAuth.mockResolvedValue(null);
+      mockGetSession.mockResolvedValue(null);
 
       const result = await RoleGate({
-        allowedRoles: [UserRole.STANDARD_USER],
+        allowedRoles: [UserRole.Analyst],
         children: <div>User Content</div>,
-      });
-
-      expect(result).toBeNull();
-    });
-
-    it('should return null when session has no user object', async () => {
-      mockAuth.mockResolvedValue({
-        user: undefined as unknown as Session['user'],
-        expires: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
-      });
-
-      const result = await RoleGate({
-        allowedRoles: [UserRole.ADMIN],
-        children: <div>Admin Panel</div>,
       });
 
       expect(result).toBeNull();
@@ -166,11 +142,11 @@ describe('RoleGate Component', () => {
 
   describe('fallback content', () => {
     it('should show fallback when user lacks required role', async () => {
-      mockAuth.mockResolvedValue(createMockSession(UserRole.READ_ONLY));
+      mockGetSession.mockResolvedValue(createMockUser([UserRole.ReadOnly]));
       const fallback = <div>Access Denied</div>;
 
       const result = await RoleGate({
-        allowedRoles: [UserRole.ADMIN],
+        allowedRoles: [UserRole.Administrator],
         children: <div>Admin Panel</div>,
         fallback,
       });
@@ -179,7 +155,7 @@ describe('RoleGate Component', () => {
     });
 
     it('should show fallback for unauthenticated user', async () => {
-      mockAuth.mockResolvedValue(null);
+      mockGetSession.mockResolvedValue(null);
       const fallback = <p>Please log in</p>;
 
       const result = await RoleGate({
@@ -192,12 +168,14 @@ describe('RoleGate Component', () => {
     });
 
     it('should render children (not fallback) when authorized', async () => {
-      mockAuth.mockResolvedValue(createMockSession(UserRole.ADMIN));
+      mockGetSession.mockResolvedValue(
+        createMockUser([UserRole.Administrator]),
+      );
       const children = <div>Admin Panel</div>;
       const fallback = <div>Access Denied</div>;
 
       const result = await RoleGate({
-        allowedRoles: [UserRole.ADMIN],
+        allowedRoles: [UserRole.Administrator],
         children,
         fallback,
       });

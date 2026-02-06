@@ -149,6 +149,14 @@ function buildHeaders(
     baseHeaders['LastChangedUser'] = lastChangedUser;
   }
 
+  // Add JWT token from cookie
+  if (typeof document !== 'undefined') {
+    const match = document.cookie.match(/(?:^|;\s*)accessToken=([^;]*)/);
+    if (match && match[1]) {
+      baseHeaders['Authorization'] = `Bearer ${match[1]}`;
+    }
+  }
+
   return baseHeaders;
 }
 
