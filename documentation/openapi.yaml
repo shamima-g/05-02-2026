@@ -56,6 +56,8 @@ tags:
     description: Currencies, countries, benchmarks, indexes
   - name: Calculations
     description: Calculated results (performance, fees)
+  - name: Dashboard
+    description: Aggregation endpoints for the role-based dashboard home screen
   - name: Audit
     description: Audit trail access
 
@@ -1717,6 +1719,88 @@ paths:
                 $ref: '#/components/schemas/ReportComment'
 
   # ============================================
+  # DASHBOARD (Aggregation Endpoints)
+  # ============================================
+  /dashboard/pending-actions:
+    get:
+      tags: [Dashboard]
+      summary: Get pending actions for current user
+      description: |
+        Returns role-specific pending actions requiring the current user's attention.
+        The backend filters actions based on the authenticated user's roles:
+        - **OperationsLead**: File status alerts, validation summaries, workflow progression tasks
+        - **Analyst**: Outstanding master data items requiring maintenance (missing durations, betas, etc.)
+        - **ApproverL1/L2/L3**: Batches awaiting the user's specific approval level only
+        - **Administrator**: User management alerts and system configuration notifications
+      operationId: getPendingActions
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: List of pending actions for the current user
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PendingAction'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /dashboard/activity:
+    get:
+      tags: [Dashboard]
+      summary: Get recent system activity
+      description: |
+        Returns recent system activity filtered by the current user's role and permissions.
+        Activities include file uploads, batch approvals, master data changes, and other
+        workflow events relevant to the user.
+      operationId: getDashboardActivity
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: limit
+          in: query
+          description: Maximum number of activity entries to return
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 50
+            default: 10
+      responses:
+        '200':
+          description: List of recent activity entries
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/DashboardActivity'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /dashboard/data-quality-summary:
+    get:
+      tags: [Dashboard]
+      summary: Get data quality summary
+      description: |
+        Returns aggregated counts of missing or incomplete reference data across all
+        active batches. Used by Operations Lead and Analyst roles to see outstanding
+        data quality issues at a glance.
+      operationId: getDataQualitySummary
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Summary of data quality issues
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DataQualitySummary'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  # ============================================
   # AUDIT
   # ============================================
   /audit/changes:
@@ -3228,3 +3312,84 @@ components:
             $ref: '#/components/schemas/AuditTrailEntry'
         meta:
           $ref: '#/components/schemas/PaginationMeta'
+
+    # ============================================
+    # Dashboard
+    # ============================================
+    PendingAction:
+      type: object
+      description: A pending action requiring the user's attention on the dashboard
+      properties:
+        id:
+          type: string
+          description: Unique identifier for this pending action
+        type:
+          type: string
+          enum: [file_alert, validation, approval, master_data, admin]
+          description: |
+            Category of pending action:
+            - file_alert: File upload/processing status (OperationsLead)
+            - validation: Data validation issues (OperationsLead)
+            - approval: Batches awaiting approval (ApproverL1/L2/L3)
+            - master_data: Master data maintenance items (Analyst)
+            - admin: User management and system config (Administrator)
+        title:
+          type: string
+          description: Short summary of the pending action
+        description:
+          type: string
+          description: Detailed description of what needs attention
+        link:
+          type: string
+          description: Frontend route to navigate to for resolving this action
+        priority:
+          type: string
+          enum: [high, medium, low]
+          description: Priority level affecting display order and styling
+      required: [id, type, title, description, link, priority]
+
+    DashboardActivity:
+      type: object
+      description: A recent system activity entry for the dashboard activity feed
+      properties:
+        id:
+          type: integer
+          description: Unique identifier for this activity entry
+        action:
+          type: string
+          description: Human-readable description of the action performed
+        user:
+          type: string
+          description: Display name of the user who performed the action
+        timestamp:
+          type: string
+          format: date-time
+          description: When the action occurred
+        entityType:
+          type: string
+          description: Type of entity affected (e.g., File, Batch, Instrument)
+        entityId:
+          type: integer
+          description: ID of the affected entity
+      required: [id, action, user, timestamp, entityType, entityId]
+
+    DataQualitySummary:
+      type: object
+      description: |
+        Aggregated counts of missing reference data across active batches.
+        These counts represent instruments or indexes that are missing required
+        data values needed before batch approval can proceed.
+      properties:
+        missingRatings:
+          type: integer
+          description: Count of instruments missing credit rating data
+        missingDurations:
+          type: integer
+          description: Count of instruments missing duration values
+        missingBetas:
+          type: integer
+          description: Count of instruments missing beta values
+        missingIndexPrices:
+          type: integer
+          description: Count of indexes missing price data
+      required: [missingRatings, missingDurations, missingBetas, missingIndexPrices]

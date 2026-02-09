@@ -8,6 +8,7 @@ import {
   Clock,
   AlertTriangle,
   ChevronRight,
+  ExternalLink,
 } from 'lucide-react';
 import { getCurrentUser } from '@/lib/api/auth';
 import type { AuthUser } from '@/lib/api/auth';
@@ -26,6 +27,7 @@ import type {
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { AppHeader } from '@/components/layout/AppHeader';
+import { WorkflowProgress } from '@/components/dashboard/WorkflowProgress';
 
 const MONTHS = [
   'January',
@@ -152,6 +154,26 @@ export default function HomePage() {
     loadDashboard();
   }, []);
 
+  useEffect(() => {
+    if (loading) return;
+
+    const interval = setInterval(async () => {
+      const results = await Promise.allSettled([
+        getPendingActions(),
+        getDashboardActivity(),
+      ]);
+
+      if (results[0].status === 'fulfilled') {
+        setPendingActions(results[0].value);
+      }
+      if (results[1].status === 'fulfilled') {
+        setActivity(results[1].value);
+      }
+    }, 30000);
+
+    return () => clearInterval(interval);
+  }, [loading]);
+
   if (loading) {
     return (
       <main className="container mx-auto px-4 py-8">
@@ -273,6 +295,7 @@ export default function HomePage() {
                         >
                           {batch.status}
                         </Badge>
+                        <WorkflowProgress status={batch.status} />
                       </div>
                       <a
                         href={`/batches/${batch.id}`}
@@ -321,6 +344,17 @@ export default function HomePage() {
               ) : (
                 <p className="text-muted-foreground">No recent activity</p>
               )}
+              <a
+                href="/audit"
+                onClick={(e) => {
+                  e.preventDefault();
+                  router.push('/audit');
+                }}
+                className="mt-4 inline-flex items-center gap-1 text-sm font-medium text-primary hover:underline"
+              >
+                View Full Log
+                <ExternalLink className="h-3 w-3" />
+              </a>
             </CardContent>
           </Card>
 

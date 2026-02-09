@@ -106,7 +106,7 @@ export async function getActiveBatches(
   status?: string,
 ): Promise<ActiveBatchesResponse> {
   const queryParams = status ? `?status=${status}` : '';
-  return get<ActiveBatchesResponse>(`/batches${queryParams}`);
+  return get<ActiveBatchesResponse>(`/report-batches${queryParams}`);
 }
 
 /**

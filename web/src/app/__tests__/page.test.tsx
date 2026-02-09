@@ -726,6 +726,44 @@ describe('Dashboard Page', () => {
 
       expect(mockRouter.push).toHaveBeenCalledWith('/batches/1');
     });
+
+    it('navigates to audit trail when View Full Log is clicked', async () => {
+      const user = userEvent.setup();
+      const mockUser = createMockUser();
+      (authApi.getCurrentUser as ReturnType<typeof vi.fn>).mockResolvedValue(
+        mockUser,
+      );
+      (
+        dashboardApi.getPendingActions as ReturnType<typeof vi.fn>
+      ).mockResolvedValue([]);
+      (
+        dashboardApi.getActiveBatches as ReturnType<typeof vi.fn>
+      ).mockResolvedValue({
+        items: [],
+        meta: { page: 1, pageSize: 20, totalItems: 0, totalPages: 0 },
+      });
+      (
+        dashboardApi.getDashboardActivity as ReturnType<typeof vi.fn>
+      ).mockResolvedValue(createMockDashboardActivity());
+      (
+        dashboardApi.getDataQualitySummary as ReturnType<typeof vi.fn>
+      ).mockResolvedValue(createMockDataQualitySummary());
+
+      render(<HomePage />);
+
+      await waitFor(() => {
+        expect(
+          screen.getByText('Uploaded holdings file for January 2026'),
+        ).toBeInTheDocument();
+      });
+
+      const viewFullLogLink = screen.getByRole('link', {
+        name: /view full log/i,
+      });
+      await user.click(viewFullLogLink);
+
+      expect(mockRouter.push).toHaveBeenCalledWith('/audit');
+    });
   });
 
   describe('Error Handling', () => {
@@ -844,6 +882,238 @@ describe('Dashboard Page', () => {
           screen.getByRole('heading', { name: /recent activity/i }),
         ).toBeInTheDocument();
       });
+    });
+  });
+
+  describe('Workflow Status Visualization', () => {
+    it('displays workflow stage labels for active batches', async () => {
+      const mockUser = createMockUser();
+      (authApi.getCurrentUser as ReturnType<typeof vi.fn>).mockResolvedValue(
+        mockUser,
+      );
+      (
+        dashboardApi.getPendingActions as ReturnType<typeof vi.fn>
+      ).mockResolvedValue([]);
+      (
+        dashboardApi.getActiveBatches as ReturnType<typeof vi.fn>
+      ).mockResolvedValue(createMockActiveBatches());
+      (
+        dashboardApi.getDashboardActivity as ReturnType<typeof vi.fn>
+      ).mockResolvedValue([]);
+      (
+        dashboardApi.getDataQualitySummary as ReturnType<typeof vi.fn>
+      ).mockResolvedValue(createMockDataQualitySummary());
+
+      render(<HomePage />);
+
+      await waitFor(() => {
+        // Workflow stage labels should appear in the batches panel
+        expect(screen.getAllByText('Data Prep').length).toBeGreaterThan(0);
+        expect(screen.getAllByText('L1').length).toBeGreaterThan(0);
+        expect(screen.getAllByText('L2').length).toBeGreaterThan(0);
+        expect(screen.getAllByText('L3').length).toBeGreaterThan(0);
+      });
+    });
+
+    it('shows current position indicator for a batch in Level2Pending', async () => {
+      const mockUser = createMockUser();
+      (authApi.getCurrentUser as ReturnType<typeof vi.fn>).mockResolvedValue(
+        mockUser,
+      );
+      (
+        dashboardApi.getPendingActions as ReturnType<typeof vi.fn>
+      ).mockResolvedValue([]);
+      (
+        dashboardApi.getActiveBatches as ReturnType<typeof vi.fn>
+      ).mockResolvedValue({
+        items: [
+          {
+            id: 2,
+            reportBatchType: 'Monthly',
+            reportDate: '2025-12-31',
+            workflowInstanceId: 'wf-002',
+            status: 'Level2Pending',
+          },
+        ],
+        meta: { page: 1, pageSize: 20, totalItems: 1, totalPages: 1 },
+      });
+      (
+        dashboardApi.getDashboardActivity as ReturnType<typeof vi.fn>
+      ).mockResolvedValue([]);
+      (
+        dashboardApi.getDataQualitySummary as ReturnType<typeof vi.fn>
+      ).mockResolvedValue(createMockDataQualitySummary());
+
+      render(<HomePage />);
+
+      await waitFor(() => {
+        // For Level2Pending: Data Prep and L1 are completed, L2 is current
+        const workflow = screen.getByLabelText('Workflow progress');
+        expect(workflow).toBeInTheDocument();
+
+        // Completed stages should have checkmark indicators
+        const completedStages = workflow.querySelectorAll(
+          '[data-stage-state="completed"]',
+        );
+        expect(completedStages).toHaveLength(2); // Data Prep, L1
+
+        // Current stage should have current indicator
+        const currentStage = workflow.querySelector(
+          '[data-stage-state="current"]',
+        );
+        expect(currentStage).toBeInTheDocument();
+        expect(currentStage?.textContent).toContain('L2');
+
+        // Pending stages
+        const pendingStages = workflow.querySelectorAll(
+          '[data-stage-state="pending"]',
+        );
+        expect(pendingStages).toHaveLength(2); // L3, Published
+      });
+    });
+
+    it('shows all stages completed for an Approved batch', async () => {
+      const mockUser = createMockUser();
+      (authApi.getCurrentUser as ReturnType<typeof vi.fn>).mockResolvedValue(
+        mockUser,
+      );
+      (
+        dashboardApi.getPendingActions as ReturnType<typeof vi.fn>
+      ).mockResolvedValue([]);
+      (
+        dashboardApi.getActiveBatches as ReturnType<typeof vi.fn>
+      ).mockResolvedValue({
+        items: [
+          {
+            id: 3,
+            reportBatchType: 'Monthly',
+            reportDate: '2025-11-30',
+            workflowInstanceId: 'wf-003',
+            status: 'Approved',
+          },
+        ],
+        meta: { page: 1, pageSize: 20, totalItems: 1, totalPages: 1 },
+      });
+      (
+        dashboardApi.getDashboardActivity as ReturnType<typeof vi.fn>
+      ).mockResolvedValue([]);
+      (
+        dashboardApi.getDataQualitySummary as ReturnType<typeof vi.fn>
+      ).mockResolvedValue(createMockDataQualitySummary());
+
+      render(<HomePage />);
+
+      await waitFor(() => {
+        const workflow = screen.getByLabelText('Workflow progress');
+        const completedStages = workflow.querySelectorAll(
+          '[data-stage-state="completed"]',
+        );
+        expect(completedStages).toHaveLength(5); // All 5 stages completed
+
+        const pendingStages = workflow.querySelectorAll(
+          '[data-stage-state="pending"]',
+        );
+        expect(pendingStages).toHaveLength(0);
+      });
+    });
+  });
+
+  describe('Real-Time Updates', () => {
+    it('refreshes pending actions data automatically after 30 seconds', async () => {
+      vi.useFakeTimers({ shouldAdvanceTime: true });
+      const mockUser = createMockUser();
+      (authApi.getCurrentUser as ReturnType<typeof vi.fn>).mockResolvedValue(
+        mockUser,
+      );
+      (
+        dashboardApi.getPendingActions as ReturnType<typeof vi.fn>
+      ).mockResolvedValue(createMockPendingActions('OperationsLead'));
+      (
+        dashboardApi.getActiveBatches as ReturnType<typeof vi.fn>
+      ).mockResolvedValue(createMockActiveBatches());
+      (
+        dashboardApi.getDashboardActivity as ReturnType<typeof vi.fn>
+      ).mockResolvedValue(createMockDashboardActivity());
+      (
+        dashboardApi.getDataQualitySummary as ReturnType<typeof vi.fn>
+      ).mockResolvedValue(createMockDataQualitySummary());
+
+      render(<HomePage />);
+
+      // Wait for initial load to complete
+      await waitFor(() => {
+        expect(
+          screen.getByText('3 files pending for January 2026'),
+        ).toBeInTheDocument();
+      });
+
+      // Clear mock call counts after initial load
+      (dashboardApi.getPendingActions as ReturnType<typeof vi.fn>).mockClear();
+
+      // Advance timers by 30 seconds to trigger polling
+      await vi.advanceTimersByTimeAsync(30000);
+
+      expect(dashboardApi.getPendingActions).toHaveBeenCalledTimes(1);
+
+      vi.useRealTimers();
+    });
+
+    it('updates recent activity with new entries after polling', async () => {
+      vi.useFakeTimers({ shouldAdvanceTime: true });
+      const mockUser = createMockUser();
+      (authApi.getCurrentUser as ReturnType<typeof vi.fn>).mockResolvedValue(
+        mockUser,
+      );
+      (
+        dashboardApi.getPendingActions as ReturnType<typeof vi.fn>
+      ).mockResolvedValue([]);
+      (
+        dashboardApi.getActiveBatches as ReturnType<typeof vi.fn>
+      ).mockResolvedValue({
+        items: [],
+        meta: { page: 1, pageSize: 20, totalItems: 0, totalPages: 0 },
+      });
+      (
+        dashboardApi.getDashboardActivity as ReturnType<typeof vi.fn>
+      ).mockResolvedValue(createMockDashboardActivity());
+      (
+        dashboardApi.getDataQualitySummary as ReturnType<typeof vi.fn>
+      ).mockResolvedValue(createMockDataQualitySummary());
+
+      render(<HomePage />);
+
+      // Wait for initial load
+      await waitFor(() => {
+        expect(
+          screen.getByText('Uploaded holdings file for January 2026'),
+        ).toBeInTheDocument();
+      });
+
+      // Mock updated activity for next poll
+      (
+        dashboardApi.getDashboardActivity as ReturnType<typeof vi.fn>
+      ).mockResolvedValue([
+        {
+          id: 99,
+          action: 'New batch created for February 2026',
+          user: 'Admin User',
+          timestamp: '2026-02-09T10:00:00Z',
+          entityType: 'Batch',
+          entityId: 5,
+        },
+        ...createMockDashboardActivity(),
+      ]);
+
+      // Advance timers by 30 seconds to trigger polling
+      await vi.advanceTimersByTimeAsync(30000);
+
+      await waitFor(() => {
+        expect(
+          screen.getByText('New batch created for February 2026'),
+        ).toBeInTheDocument();
+      });
+
+      vi.useRealTimers();
     });
   });
 });
