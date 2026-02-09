@@ -147,6 +147,16 @@ paths:
           description: Search by username, display name, or email
           schema:
             type: string
+        - name: department
+          in: query
+          description: Filter by department
+          schema:
+            type: string
+        - name: roleId
+          in: query
+          description: Filter by role ID
+          schema:
+            type: integer
       responses:
         '200':
           description: List of users
@@ -234,12 +244,21 @@ paths:
     post:
       tags: [Users]
       summary: Deactivate user
-      description: Soft delete - user cannot be hard deleted per audit requirements
+      description: |
+        Soft delete - user cannot be hard deleted per audit requirements.
+        A reason must be provided for the audit trail.
+        If the user is an approver with pending approvals, a transferApprovalsTo user ID must be specified.
       operationId: deactivateUser
       security:
         - bearerAuth: []
       parameters:
         - $ref: '#/components/parameters/IdParam'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DeactivateUserRequest'
       responses:
         '200':
           description: User deactivated
@@ -247,6 +266,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/UserDetail'
+        '400':
+          description: Validation error (e.g., missing reason or transfer target)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
         '403':
           $ref: '#/components/responses/Forbidden'
 
@@ -368,6 +393,41 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/UserHistoryEntry'
+
+  /users/export:
+    get:
+      tags: [Users]
+      summary: Export user list to Excel
+      operationId: exportUsers
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: format
+          in: query
+          schema:
+            type: string
+            enum: [xlsx, csv]
+            default: xlsx
+        - name: isActive
+          in: query
+          description: Filter by active/inactive status
+          schema:
+            type: boolean
+        - name: search
+          in: query
+          description: Filter by name, email, or username
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Excel file
+          content:
+            application/vnd.openxmlformats-officedocument.spreadsheetml.sheet:
+              schema:
+                type: string
+                format: binary
+        '403':
+          $ref: '#/components/responses/Forbidden'
 
   # ============================================
   # ROLES AND PERMISSIONS
@@ -2023,17 +2083,51 @@ components:
           type: integer
         username:
           type: string
+        firstName:
+          type: string
+        lastName:
+          type: string
         displayName:
           type: string
         email:
           type: string
           nullable: true
+        department:
+          type: string
+          nullable: true
+        jobTitle:
+          type: string
+          nullable: true
+        employeeId:
+          type: string
+          nullable: true
+        managerId:
+          type: integer
+          nullable: true
+        managerName:
+          type: string
+          nullable: true
         isActive:
           type: boolean
+        deactivationReason:
+          type: string
+          nullable: true
+          description: Reason for deactivation (populated when isActive=false)
+        deactivatedAt:
+          type: string
+          format: date-time
+          nullable: true
         roles:
           type: array
           items:
             $ref: '#/components/schemas/Role'
+        lastLoginAt:
+          type: string
+          format: date-time
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
         lastChangedUser:
           type: string
         validFrom:
@@ -2060,27 +2154,86 @@ components:
           type: string
           minLength: 3
           maxLength: 100
+        firstName:
+          type: string
+          maxLength: 100
+        lastName:
+          type: string
+          maxLength: 100
         displayName:
           type: string
           maxLength: 200
         email:
           type: string
           format: email
+        department:
+          type: string
+          maxLength: 100
+        jobTitle:
+          type: string
+          maxLength: 100
+        managerId:
+          type: integer
+          nullable: true
+          description: ID of the user's manager
+        employeeId:
+          type: string
+          maxLength: 50
         roleIds:
           type: array
           items:
             type: integer
-      required: [username, displayName]
+          minItems: 1
+        forcePasswordChange:
+          type: boolean
+          default: true
+          description: Require password change on first login
+        sendWelcomeEmail:
+          type: boolean
+          default: false
+          description: Send welcome email with login instructions
+      required: [username, firstName, lastName, email, roleIds]
 
     UpdateUserRequest:
       type: object
       properties:
+        firstName:
+          type: string
+          maxLength: 100
+        lastName:
+          type: string
+          maxLength: 100
         displayName:
           type: string
           maxLength: 200
         email:
           type: string
           format: email
+        department:
+          type: string
+          maxLength: 100
+        jobTitle:
+          type: string
+          maxLength: 100
+        managerId:
+          type: integer
+          nullable: true
+        employeeId:
+          type: string
+          maxLength: 50
+
+    DeactivateUserRequest:
+      type: object
+      properties:
+        reason:
+          type: string
+          minLength: 1
+          description: Reason for deactivation (required for audit trail)
+        transferApprovalsTo:
+          type: integer
+          nullable: true
+          description: User ID to transfer pending approvals to (required if user is an approver)
+      required: [reason]
 
     UserHistoryEntry:
       allOf:

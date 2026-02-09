@@ -220,6 +220,23 @@ export function sanitizeHtml(input: string): string {
 }
 
 /**
+ * Create user form validation schema
+ * Validates required fields for creating a new user account
+ */
+export const createUserSchema = z.object({
+  firstName: z.string().min(1, 'First name is required'),
+  lastName: z.string(),
+  email: z.string().min(1, 'Email address is required'),
+  username: z.string(),
+  department: z.string(),
+  jobTitle: z.string(),
+  employeeId: z.string(),
+  roleIds: z.array(z.number()).min(1, 'At least one role must be assigned'),
+  forcePasswordChange: z.boolean(),
+  sendWelcomeEmail: z.boolean(),
+});
+
+/**
  * Create a schema with sanitization
  * Useful for text inputs that should not contain HTML
  */
