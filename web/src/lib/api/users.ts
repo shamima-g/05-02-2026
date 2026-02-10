@@ -124,9 +124,12 @@ export interface DeactivateUserRequest {
 
 /**
  * Request to update user roles
+ * Per OpenAPI spec and BR-SEC-005: supports optional effective date and required reason for audit trail
  */
 export interface UpdateUserRolesRequest {
   roleIds: number[];
+  effectiveDate?: string; // ISO date string, e.g., "2026-01-06"
+  reason: string; // Required for audit trail per BR-SEC-005
 }
 
 /**
@@ -228,9 +231,11 @@ export async function getUserRoles(id: number): Promise<Role[]> {
 
 /**
  * Update user's roles
+ * Per REALIGN report Epic 1 Story 4 - Impact 4.1 RESOLVED:
+ * Now supports effectiveDate (optional) and reason (required) fields
  *
  * @param id - User ID
- * @param data - New role IDs
+ * @param data - New role IDs with optional effective date and required reason
  * @param lastChangedUser - Username of the admin updating roles (for audit)
  * @returns Updated array of roles
  */

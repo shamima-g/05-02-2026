@@ -257,7 +257,7 @@ export default function UsersPage() {
       if (JSON.stringify(originalRoleIds) !== JSON.stringify(newRoleIds)) {
         await updateUserRoles(
           selectedUser.id,
-          { roleIds: editForm.roleIds },
+          { roleIds: editForm.roleIds, reason: 'Role updated via user edit' },
           currentUser.username,
         );
       }

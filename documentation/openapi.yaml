@@ -316,7 +316,7 @@ paths:
     put:
       tags: [Users]
       summary: Update user roles
-      description: Replace all user roles with the provided list
+      description: Replace all user roles with the provided list. Supports optional effective date for scheduled role changes and reason for audit trail compliance.
       operationId: updateUserRoles
       security:
         - bearerAuth: []
@@ -333,7 +333,18 @@ paths:
                   type: array
                   items:
                     type: integer
-              required: [roleIds]
+                  description: Array of role IDs to assign to the user
+                effectiveDate:
+                  type: string
+                  format: date
+                  description: Date when the role assignment takes effect. If omitted, changes take effect immediately.
+                  example: '2026-01-06'
+                reason:
+                  type: string
+                  maxLength: 500
+                  description: Reason for the role change (required for audit trail per BR-SEC-005)
+                  example: 'Promotion to team lead role'
+              required: [roleIds, reason]
       responses:
         '200':
           description: Roles updated
