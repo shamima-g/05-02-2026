@@ -262,10 +262,10 @@ describe('Role & Permission Management Page', () => {
         ).toBeInTheDocument();
       });
 
-      // Should NOT have Approval Authority Config tab (deferred to Story 5)
+      // Story 5 has been implemented - Approval Authority Config tab should exist
       expect(
-        screen.queryByRole('tab', { name: /approval authority config/i }),
-      ).not.toBeInTheDocument();
+        screen.getByRole('tab', { name: /approval authority config/i }),
+      ).toBeInTheDocument();
     });
 
     it('displays all 7 system roles on Role Definitions tab', async () => {
