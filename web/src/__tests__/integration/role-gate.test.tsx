@@ -30,6 +30,7 @@ function createMockUser(
     email: 'test@example.com',
     roles,
     permissions,
+    allowedPages: [],
   };
 }
 
@@ -53,12 +54,10 @@ describe('RoleGate Component', () => {
     });
 
     it('should render when user role is in allowedRoles list', async () => {
-      mockGetSession.mockResolvedValue(
-        createMockUser([UserRole.OperationsLead]),
-      );
+      mockGetSession.mockResolvedValue(createMockUser([UserRole.Analyst]));
 
       const result = await RoleGate({
-        allowedRoles: [UserRole.Administrator, UserRole.OperationsLead],
+        allowedRoles: [UserRole.Administrator, UserRole.Analyst],
         children: <div>Management Tools</div>,
       });
 
@@ -82,7 +81,7 @@ describe('RoleGate Component', () => {
     });
 
     it('should render for any authenticated user with requireAuth', async () => {
-      mockGetSession.mockResolvedValue(createMockUser([UserRole.ReadOnly]));
+      mockGetSession.mockResolvedValue(createMockUser([UserRole.ApproverL1]));
 
       const result = await RoleGate({
         requireAuth: true,
@@ -105,7 +104,7 @@ describe('RoleGate Component', () => {
 
   describe('hides children when unauthorized', () => {
     it('should return null when user lacks required role', async () => {
-      mockGetSession.mockResolvedValue(createMockUser([UserRole.ReadOnly]));
+      mockGetSession.mockResolvedValue(createMockUser([UserRole.ApproverL1]));
 
       const result = await RoleGate({
         allowedRoles: [UserRole.Administrator],
@@ -117,7 +116,7 @@ describe('RoleGate Component', () => {
 
     it('should return null when user lacks required permission', async () => {
       mockGetSession.mockResolvedValue(
-        createMockUser([UserRole.ReadOnly], ['view_portfolios']),
+        createMockUser([UserRole.ApproverL1], ['view_portfolios']),
       );
 
       const result = await RoleGate({
@@ -142,7 +141,7 @@ describe('RoleGate Component', () => {
 
   describe('fallback content', () => {
     it('should show fallback when user lacks required role', async () => {
-      mockGetSession.mockResolvedValue(createMockUser([UserRole.ReadOnly]));
+      mockGetSession.mockResolvedValue(createMockUser([UserRole.ApproverL1]));
       const fallback = <div>Access Denied</div>;
 
       const result = await RoleGate({

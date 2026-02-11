@@ -46,7 +46,7 @@
 
 ### Permission Override for Approvers
 - [ ] Given I am a Level 1 Approver viewing a batch in "Level1Pending", when I view the approval review page, then I can see all data in read-only mode (approvers cannot modify data even if they have other roles)
-- [ ] Given I am an Operations Lead who is also a Level 1 Approver, when I try to edit data in a locked batch, then the action is blocked (no role-based override - lock is absolute)
+- [ ] Given I am an Analyst who is also a Level 1 Approver, when I try to edit data in a locked batch, then the action is blocked (no role-based override - lock is absolute)
 
 ### Validation - Immediate Enforcement
 - [ ] Given a batch just transitioned to "Level1Pending" (within last 5 seconds), when I try to upload a file, then the lock is enforced immediately (no grace period)

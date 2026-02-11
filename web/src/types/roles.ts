@@ -1,28 +1,33 @@
 /**
  * InvestInsight User Roles
  * Matches BRD BR-SEC-002 and OpenAPI User.roles enum
+ *
+ * 5 Default Roles:
+ * - Analyst: All pages except Approval L1/L2/L3 and User Management
+ * - ApproverL1: Approval Level 1 page only
+ * - ApproverL2: Approval Level 2 page only
+ * - ApproverL3: Approval Level 3 page only
+ * - Administrator: Users and Roles pages only
+ *
+ * Roles are API/database-driven. Administrators can create custom roles
+ * and edit existing roles' page access and action permissions.
  */
 export enum UserRole {
-  OperationsLead = 'OperationsLead',
   Analyst = 'Analyst',
   ApproverL1 = 'ApproverL1',
   ApproverL2 = 'ApproverL2',
   ApproverL3 = 'ApproverL3',
   Administrator = 'Administrator',
-  ReadOnly = 'ReadOnly',
 }
 
 export const roleDescriptions: Record<UserRole, string> = {
-  [UserRole.OperationsLead]:
-    'Full data entry, file management, workflow orchestration',
-  [UserRole.Analyst]: 'Data correction and maintenance, commentary',
+  [UserRole.Analyst]: 'All pages except Approval L1/L2/L3 and User Management',
   [UserRole.ApproverL1]:
     'Operations level approval - data completeness verification',
   [UserRole.ApproverL2]:
     'Portfolio Manager level approval - holdings reasonableness',
   [UserRole.ApproverL3]: 'Executive level approval - final sign-off',
   [UserRole.Administrator]: 'User management, configuration, audit access',
-  [UserRole.ReadOnly]: 'View access for reporting and analysis',
 };
 
 export const APPROVER_ROLES = [

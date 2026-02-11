@@ -172,7 +172,7 @@ WORKFLOW EVENTS TAB:
 |  |                   | Automated: Workflow → Data Preparation               |  |
 |  |                   | Automated: Calculations cleared                      |  |
 |  |                   | Automated: Data entry unlocked                       |  |
-|  |                   | Automated: Notification sent to Operations Lead      |  |
+|  |                   | Automated: Notification sent to Analyst      |  |
 |  +------------------------------------------------------------------------+  |
 |  | 2026-01-03 09:15  | Batch Created   | John Smith  | Batch:  | [View]  |  |
 |  |                   |                 |             | Jan 2026|         |  |

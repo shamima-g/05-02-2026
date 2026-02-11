@@ -38,6 +38,7 @@ describe('Auth API Functions', () => {
           email: 'jdoe@example.com',
           roles: ['Analyst'],
           permissions: ['view_portfolios'],
+          allowedPages: [],
         },
       };
 
@@ -119,6 +120,7 @@ describe('Auth API Functions', () => {
           'create_reports',
           'approve_reports_l1',
         ],
+        allowedPages: [],
       };
 
       mockGet.mockResolvedValue(mockUser);
@@ -147,15 +149,16 @@ describe('Auth API Functions', () => {
         username: 'admin',
         displayName: 'System Administrator',
         email: 'admin@example.com',
-        roles: ['Administrator', 'OperationsLead'],
+        roles: ['Administrator', 'Analyst'],
         permissions: ['*'],
+        allowedPages: [],
       };
 
       mockGet.mockResolvedValue(mockUser);
 
       const result = await getCurrentUser();
 
-      expect(result.roles).toEqual(['Administrator', 'OperationsLead']);
+      expect(result.roles).toEqual(['Administrator', 'Analyst']);
       expect(result.permissions).toEqual(['*']);
     });
   });
@@ -173,6 +176,7 @@ describe('Auth API Functions', () => {
           email: 'jdoe@example.com',
           roles: ['Analyst'],
           permissions: ['view_portfolios'],
+          allowedPages: [],
         },
       };
 

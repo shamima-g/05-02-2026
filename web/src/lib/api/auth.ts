@@ -25,6 +25,7 @@ export interface AuthUser {
   email: string;
   roles: string[];
   permissions: string[];
+  allowedPages: string[];
 }
 
 /**

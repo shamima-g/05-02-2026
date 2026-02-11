@@ -19,32 +19,35 @@ import { cn } from '@/lib/utils';
 interface NavLink {
   href: string;
   label: string;
-  roles?: string[];
 }
 
-const NAV_LINKS: NavLink[] = [
+/**
+ * All navigable pages with their display labels.
+ * Visibility is controlled dynamically by the user's allowedPages.
+ * Dashboard ("/") is always visible to authenticated users.
+ */
+const ALL_NAV_LINKS: NavLink[] = [
   { href: '/', label: 'Dashboard' },
-  { href: '/batches', label: 'Batches', roles: ['OperationsLead', 'Analyst'] },
-  {
-    href: '/approvals',
-    label: 'Approvals',
-    roles: ['ApproverL1', 'ApproverL2', 'ApproverL3'],
-  },
-  { href: '/admin/users', label: 'Users', roles: ['Administrator'] },
-  { href: '/admin/roles', label: 'Roles', roles: ['Administrator'] },
-  {
-    href: '/admin/audit-trail',
-    label: 'Audit Trail',
-    roles: ['Administrator'],
-  },
+  { href: '/batches', label: 'Batches' },
+  { href: '/approvals/level-1', label: 'Approval L1' },
+  { href: '/approvals/level-2', label: 'Approval L2' },
+  { href: '/approvals/level-3', label: 'Approval L3' },
+  { href: '/admin/users', label: 'Users' },
+  { href: '/admin/roles', label: 'Roles' },
+  { href: '/admin/audit-trail', label: 'Audit Trail' },
 ];
 
 interface AppHeaderProps {
   displayName: string;
   roles: string[];
+  allowedPages?: string[];
 }
 
-export function AppHeader({ displayName, roles }: AppHeaderProps) {
+export function AppHeader({
+  displayName,
+  roles,
+  allowedPages = [],
+}: AppHeaderProps) {
   const router = useRouter();
   const pathname = usePathname();
 
@@ -60,8 +63,8 @@ export function AppHeader({ displayName, roles }: AppHeaderProps) {
     .toUpperCase()
     .slice(0, 2);
 
-  const visibleLinks = NAV_LINKS.filter(
-    (link) => !link.roles || link.roles.some((role) => roles.includes(role)),
+  const visibleLinks = ALL_NAV_LINKS.filter(
+    (link) => link.href === '/' || allowedPages.includes(link.href),
   );
 
   return (

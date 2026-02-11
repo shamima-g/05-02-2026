@@ -6,13 +6,13 @@ Enables creation and tracking of reporting batches with state-based workflow pro
 
 ## Stories
 
-1. **Batch Creation & Listing** - Operations Lead can create new reporting batches and view all batches with status filtering | File: `story-1-batch-creation-listing.md` | Status: Pending
+1. **Batch Creation & Listing** - Analyst can create new reporting batches and view all batches with status filtering | File: `story-1-batch-creation-listing.md` | Status: Pending
 
 2. **Batch Context Switching** - Users can switch between active batches and view historical batches in read-only mode | File: `story-2-batch-context-switching.md` | Status: Pending
 
 3. **Workflow State Visualization** - Users can see current workflow stage and progress with visual indicators | File: `story-3-workflow-state-visualization.md` | Status: Pending
 
-4. **Data Confirmation & Workflow Transition** - Operations Lead can confirm data preparation is complete and initiate calculations | File: `story-4-data-confirmation-workflow-transition.md` | Status: Pending
+4. **Data Confirmation & Workflow Transition** - Analyst can confirm data preparation is complete and initiate calculations | File: `story-4-data-confirmation-workflow-transition.md` | Status: Pending
 
 5. **State-Based Access Control** - System locks data entry during approvals and unlocks after rejection | File: `story-5-state-based-access-control.md` | Status: Pending
 
@@ -27,7 +27,7 @@ Enables creation and tracking of reporting batches with state-based workflow pro
 **External Dependencies:**
 - Epic 1 (Authentication, Authorization & User Management) - COMPLETE
   - Requires user authentication and role-based access control
-  - Uses roles defined in Epic 1 (Operations Lead, Analyst, Approvers)
+  - Uses roles defined in Epic 1 (Analyst, Approver L1/L2/L3, Administrator)
   - Leverages audit logging infrastructure from Epic 1
 
 **Internal Dependencies (within Epic 2):**

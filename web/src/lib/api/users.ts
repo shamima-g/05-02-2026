@@ -15,6 +15,7 @@ export interface Role {
   name: string;
   description: string | null;
   isSystemRole: boolean;
+  allowedPages: string[];
 }
 
 /**

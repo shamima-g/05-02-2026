@@ -67,13 +67,10 @@ Landing page that provides role-specific view of pending actions, workflow statu
 
 ## Role-Specific Behavior
 
-### Operations Lead
-- Sees file status alerts, validation summaries, workflow progression
-- Pending actions focus on data preparation tasks and confirmation readiness
-
 ### Analyst
+- Sees file status alerts, validation summaries, workflow progression
+- Pending actions focus on data preparation tasks, confirmation readiness, data correction, and commentary
 - Sees outstanding master data items requiring maintenance
-- Pending actions focus on data correction and commentary tasks
 
 ### Approver (Levels 1-3)
 - Sees batches awaiting their approval level only

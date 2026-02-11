@@ -63,6 +63,7 @@ const createMockAdminUser = (overrides: Partial<AuthUser> = {}): AuthUser => ({
   email: 'admin@investinsight.com',
   roles: ['Administrator'],
   permissions: ['manage_users', 'view_users', 'manage_roles'],
+  allowedPages: ['/admin/users', '/admin/roles', '/admin/audit-trail'],
   ...overrides,
 });
 
@@ -75,14 +76,16 @@ const createMockNonAdminUser = (
   email: 'analyst@investinsight.com',
   roles: ['Analyst'],
   permissions: ['view_portfolios'],
+  allowedPages: ['/dashboard', '/batches'],
   ...overrides,
 });
 
 const createMockRole = (overrides: Partial<Role> = {}): Role => ({
-  id: 1,
-  name: 'OperationsLead',
-  description: 'Full data entry, file management, workflow orchestration',
+  id: 2,
+  name: 'Analyst',
+  description: 'Data correction, master data maintenance, commentary',
   isSystemRole: true,
+  allowedPages: ['/dashboard', '/batches'],
   ...overrides,
 });
 
@@ -99,10 +102,11 @@ const createMockPermission = (
 const createMockRoleWithPermissions = (
   overrides: Partial<RoleWithPermissions> = {},
 ): RoleWithPermissions => ({
-  id: 1,
-  name: 'OperationsLead',
-  description: 'Full data entry, file management, workflow orchestration',
+  id: 2,
+  name: 'Analyst',
+  description: 'Data correction, master data maintenance, commentary',
   isSystemRole: true,
+  allowedPages: ['/dashboard', '/batches'],
   permissions: [
     createMockPermission(),
     createMockPermission({
@@ -172,44 +176,39 @@ const createMockUserDetail = (
   ...overrides,
 });
 
-// Helper to create all 7 system roles
+// Helper to create all 5 system roles
 const createAllSystemRoles = (): RoleWithPermissions[] => [
   createMockRoleWithPermissions({
     id: 1,
-    name: 'OperationsLead',
-    description: 'Full data entry, file management, workflow orchestration',
+    name: 'Administrator',
+    description: 'User management, system configuration, audit access',
+    allowedPages: ['/admin', '/dashboard', '/batches', '/approvals'],
   }),
   createMockRoleWithPermissions({
     id: 2,
     name: 'Analyst',
     description: 'Data correction, master data maintenance, commentary',
+    allowedPages: ['/dashboard', '/batches'],
   }),
   createMockRoleWithPermissions({
     id: 3,
     name: 'ApproverL1',
     description:
       'Approve batches at operations level (file completeness, validation)',
+    allowedPages: ['/approvals', '/dashboard'],
   }),
   createMockRoleWithPermissions({
     id: 4,
     name: 'ApproverL2',
     description:
       'Approve batches at PM level (holdings reasonableness, performance)',
+    allowedPages: ['/approvals', '/dashboard'],
   }),
   createMockRoleWithPermissions({
     id: 5,
     name: 'ApproverL3',
     description: 'Final approval before publication (overall report quality)',
-  }),
-  createMockRoleWithPermissions({
-    id: 6,
-    name: 'Administrator',
-    description: 'User management, system configuration, audit access',
-  }),
-  createMockRoleWithPermissions({
-    id: 7,
-    name: 'ReadOnly',
-    description: 'View access only, no modifications',
+    allowedPages: ['/approvals', '/dashboard'],
   }),
 ];
 
@@ -268,7 +267,7 @@ describe('Role & Permission Management Page', () => {
       ).toBeInTheDocument();
     });
 
-    it('displays all 7 system roles on Role Definitions tab', async () => {
+    it('displays all 5 system roles on Role Definitions tab', async () => {
       const mockUser = createMockAdminUser();
       const mockRoles = createAllSystemRoles();
 
@@ -282,13 +281,11 @@ describe('Role & Permission Management Page', () => {
       render(<RolesPage />);
 
       await waitFor(() => {
-        expect(screen.getByText(/operations lead/i)).toBeInTheDocument();
         expect(screen.getByText(/analyst/i)).toBeInTheDocument();
         expect(screen.getByText(/approver.*level 1/i)).toBeInTheDocument();
         expect(screen.getByText(/approver.*level 2/i)).toBeInTheDocument();
         expect(screen.getByText(/approver.*level 3/i)).toBeInTheDocument();
         expect(screen.getByText(/administrator/i)).toBeInTheDocument();
-        expect(screen.getByText(/read-only/i)).toBeInTheDocument();
       });
     });
 
@@ -313,10 +310,10 @@ describe('Role & Permission Management Page', () => {
       render(<RolesPage />);
 
       await waitFor(() => {
-        expect(screen.getByText(/operations lead/i)).toBeInTheDocument();
+        expect(screen.getByText(/analyst/i)).toBeInTheDocument();
         expect(
           screen.getByText(
-            /full data entry, file management, workflow orchestration/i,
+            /data correction, master data maintenance, commentary/i,
           ),
         ).toBeInTheDocument();
         expect(screen.getByText(/2 users/i)).toBeInTheDocument();
@@ -355,7 +352,7 @@ describe('Role & Permission Management Page', () => {
       render(<RolesPage />);
 
       await waitFor(() => {
-        expect(screen.getByText(/operations lead/i)).toBeInTheDocument();
+        expect(screen.getByText(/analyst/i)).toBeInTheDocument();
       });
 
       const viewPermissionsButton = screen.getAllByRole('button', {
@@ -367,9 +364,7 @@ describe('Role & Permission Management Page', () => {
         expect(screen.getByRole('dialog')).toBeInTheDocument();
         // Should show role name in modal
         const dialog = screen.getByRole('dialog');
-        expect(
-          within(dialog).getByText(/operations lead/i),
-        ).toBeInTheDocument();
+        expect(within(dialog).getByText(/analyst/i)).toBeInTheDocument();
       });
     });
 
@@ -392,7 +387,7 @@ describe('Role & Permission Management Page', () => {
       render(<RolesPage />);
 
       await waitFor(() => {
-        expect(screen.getByText(/operations lead/i)).toBeInTheDocument();
+        expect(screen.getByText(/analyst/i)).toBeInTheDocument();
       });
 
       const viewPermissionsButton = screen.getAllByRole('button', {
@@ -436,7 +431,7 @@ describe('Role & Permission Management Page', () => {
       render(<RolesPage />);
 
       await waitFor(() => {
-        expect(screen.getByText(/operations lead/i)).toBeInTheDocument();
+        expect(screen.getByText(/analyst/i)).toBeInTheDocument();
       });
 
       const viewPermissionsButton = screen.getAllByRole('button', {
@@ -486,7 +481,7 @@ describe('Role & Permission Management Page', () => {
       render(<RolesPage />);
 
       await waitFor(() => {
-        expect(screen.getByText(/operations lead/i)).toBeInTheDocument();
+        expect(screen.getByText(/analyst/i)).toBeInTheDocument();
       });
 
       const viewUsersButton = screen.getAllByRole('button', {
@@ -536,7 +531,7 @@ describe('Role & Permission Management Page', () => {
       render(<RolesPage />);
 
       await waitFor(() => {
-        expect(screen.getByText(/operations lead/i)).toBeInTheDocument();
+        expect(screen.getByText(/analyst/i)).toBeInTheDocument();
       });
 
       const userAssignmentsTab = screen.getByRole('tab', {
@@ -582,7 +577,7 @@ describe('Role & Permission Management Page', () => {
       render(<RolesPage />);
 
       await waitFor(() => {
-        expect(screen.getByText(/operations lead/i)).toBeInTheDocument();
+        expect(screen.getByText(/analyst/i)).toBeInTheDocument();
       });
 
       const userAssignmentsTab = screen.getByRole('tab', {
@@ -635,7 +630,7 @@ describe('Role & Permission Management Page', () => {
       render(<RolesPage />);
 
       await waitFor(() => {
-        expect(screen.getByText(/operations lead/i)).toBeInTheDocument();
+        expect(screen.getByText(/analyst/i)).toBeInTheDocument();
       });
 
       const userAssignmentsTab = screen.getByRole('tab', {
@@ -690,7 +685,7 @@ describe('Role & Permission Management Page', () => {
       render(<RolesPage />);
 
       await waitFor(() => {
-        expect(screen.getByText(/operations lead/i)).toBeInTheDocument();
+        expect(screen.getByText(/analyst/i)).toBeInTheDocument();
       });
 
       const userAssignmentsTab = screen.getByRole('tab', {
@@ -710,9 +705,6 @@ describe('Role & Permission Management Page', () => {
       await waitFor(() => {
         const dialog = screen.getByRole('dialog');
         expect(
-          within(dialog).getByRole('checkbox', { name: /operations lead/i }),
-        ).toBeInTheDocument();
-        expect(
           within(dialog).getByRole('checkbox', { name: /analyst/i }),
         ).toBeInTheDocument();
         expect(
@@ -729,10 +721,10 @@ describe('Role & Permission Management Page', () => {
         items: [createMockUserDetail()],
         meta: { page: 1, pageSize: 20, totalItems: 1, totalPages: 1 },
       };
-      const currentRoles = [createMockRole()];
+      const currentRoles = [createMockRole({ id: 2, name: 'Analyst' })];
       const updatedRoles = [
-        createMockRole(),
         createMockRole({ id: 2, name: 'Analyst' }),
+        createMockRole({ id: 3, name: 'ApproverL1' }),
       ];
 
       (authApi.getCurrentUser as ReturnType<typeof vi.fn>).mockResolvedValue(
@@ -754,7 +746,7 @@ describe('Role & Permission Management Page', () => {
       render(<RolesPage />);
 
       await waitFor(() => {
-        expect(screen.getByText(/operations lead/i)).toBeInTheDocument();
+        expect(screen.getByText(/analyst/i)).toBeInTheDocument();
       });
 
       const userAssignmentsTab = screen.getByRole('tab', {
@@ -775,10 +767,10 @@ describe('Role & Permission Management Page', () => {
         expect(screen.getByRole('dialog')).toBeInTheDocument();
       });
 
-      const analystCheckbox = screen.getByRole('checkbox', {
-        name: /analyst/i,
+      const approverL1Checkbox = screen.getByRole('checkbox', {
+        name: /approver level 1/i,
       });
-      await user.click(analystCheckbox);
+      await user.click(approverL1Checkbox);
 
       const effectiveDateInput = screen.getByLabelText(/effective date/i);
       await user.type(effectiveDateInput, '2026-01-06');
@@ -791,11 +783,22 @@ describe('Role & Permission Management Page', () => {
       });
       await user.click(saveButton);
 
+      // SoD warning appears when Analyst + ApproverL1 are combined
+      await waitFor(() => {
+        expect(screen.getByText(/segregation of duties/i)).toBeInTheDocument();
+      });
+
+      // Click "Allow with System Check" to proceed
+      const allowButton = screen.getByRole('button', {
+        name: /allow with system check/i,
+      });
+      await user.click(allowButton);
+
       await waitFor(() => {
         expect(usersApi.updateUserRoles).toHaveBeenCalledWith(
           1,
           expect.objectContaining({
-            roleIds: expect.arrayContaining([1, 2]),
+            roleIds: expect.arrayContaining([2, 3]),
             effectiveDate: '2026-01-06',
             reason: 'Promotion to team lead role',
           }),
@@ -812,18 +815,18 @@ describe('Role & Permission Management Page', () => {
         items: [
           createMockUserDetail({
             roles: [
-              createMockRole(),
               createMockRole({ id: 2, name: 'Analyst' }),
+              createMockRole({ id: 3, name: 'ApproverL1' }),
             ],
           }),
         ],
         meta: { page: 1, pageSize: 20, totalItems: 1, totalPages: 1 },
       };
       const currentRoles = [
-        createMockRole(),
         createMockRole({ id: 2, name: 'Analyst' }),
+        createMockRole({ id: 3, name: 'ApproverL1' }),
       ];
-      const updatedRoles = [createMockRole()];
+      const updatedRoles = [createMockRole({ id: 2, name: 'Analyst' })];
 
       (authApi.getCurrentUser as ReturnType<typeof vi.fn>).mockResolvedValue(
         mockUser,
@@ -844,7 +847,7 @@ describe('Role & Permission Management Page', () => {
       render(<RolesPage />);
 
       await waitFor(() => {
-        expect(screen.getByText(/operations lead/i)).toBeInTheDocument();
+        expect(screen.getByText(/analyst/i)).toBeInTheDocument();
       });
 
       const userAssignmentsTab = screen.getByRole('tab', {
@@ -865,10 +868,10 @@ describe('Role & Permission Management Page', () => {
         expect(screen.getByRole('dialog')).toBeInTheDocument();
       });
 
-      const analystCheckbox = screen.getByRole('checkbox', {
-        name: /analyst/i,
+      const approverL1Checkbox = screen.getByRole('checkbox', {
+        name: /approver level 1/i,
       });
-      await user.click(analystCheckbox);
+      await user.click(approverL1Checkbox);
 
       const reasonInput = screen.getByLabelText(/reason for change/i);
       await user.type(reasonInput, 'Role no longer needed');
@@ -882,7 +885,7 @@ describe('Role & Permission Management Page', () => {
         expect(usersApi.updateUserRoles).toHaveBeenCalledWith(
           1,
           expect.objectContaining({
-            roleIds: [1],
+            roleIds: [2],
             reason: 'Role no longer needed',
           }),
           'admin',
@@ -898,16 +901,16 @@ describe('Role & Permission Management Page', () => {
         items: [
           createMockUserDetail({
             roles: [
-              createMockRole(),
               createMockRole({ id: 2, name: 'Analyst' }),
+              createMockRole({ id: 3, name: 'ApproverL1' }),
             ],
           }),
         ],
         meta: { page: 1, pageSize: 20, totalItems: 1, totalPages: 1 },
       };
       const currentRoles = [
-        createMockRole(),
         createMockRole({ id: 2, name: 'Analyst' }),
+        createMockRole({ id: 3, name: 'ApproverL1' }),
       ];
 
       (authApi.getCurrentUser as ReturnType<typeof vi.fn>).mockResolvedValue(
@@ -926,7 +929,7 @@ describe('Role & Permission Management Page', () => {
       render(<RolesPage />);
 
       await waitFor(() => {
-        expect(screen.getByText(/operations lead/i)).toBeInTheDocument();
+        expect(screen.getByText(/analyst/i)).toBeInTheDocument();
       });
 
       const userAssignmentsTab = screen.getByRole('tab', {
@@ -944,18 +947,18 @@ describe('Role & Permission Management Page', () => {
       await user.click(modifyRolesButton);
 
       await waitFor(() => {
-        const operationsLeadCheckbox = screen.getByRole('checkbox', {
-          name: /operations lead/i,
-        }) as HTMLInputElement;
         const analystCheckbox = screen.getByRole('checkbox', {
           name: /analyst/i,
+        }) as HTMLInputElement;
+        const approverL1Checkbox = screen.getByRole('checkbox', {
+          name: /approver level 1/i,
         }) as HTMLInputElement;
         const adminCheckbox = screen.getByRole('checkbox', {
           name: /administrator/i,
         }) as HTMLInputElement;
 
-        expect(operationsLeadCheckbox.checked).toBe(true);
         expect(analystCheckbox.checked).toBe(true);
+        expect(approverL1Checkbox.checked).toBe(true);
         expect(adminCheckbox.checked).toBe(false);
       });
     });
@@ -988,7 +991,7 @@ describe('Role & Permission Management Page', () => {
       render(<RolesPage />);
 
       await waitFor(() => {
-        expect(screen.getByText(/operations lead/i)).toBeInTheDocument();
+        expect(screen.getByText(/analyst/i)).toBeInTheDocument();
       });
 
       const userAssignmentsTab = screen.getByRole('tab', {
@@ -1009,10 +1012,10 @@ describe('Role & Permission Management Page', () => {
         expect(screen.getByRole('dialog')).toBeInTheDocument();
       });
 
-      const operationsLeadCheckbox = screen.getByRole('checkbox', {
-        name: /operations lead/i,
+      const analystCheckbox = screen.getByRole('checkbox', {
+        name: /analyst/i,
       });
-      await user.click(operationsLeadCheckbox);
+      await user.click(analystCheckbox);
 
       const saveButton = screen.getByRole('button', {
         name: /save role changes/i,
@@ -1054,7 +1057,7 @@ describe('Role & Permission Management Page', () => {
       render(<RolesPage />);
 
       await waitFor(() => {
-        expect(screen.getByText(/operations lead/i)).toBeInTheDocument();
+        expect(screen.getByText(/analyst/i)).toBeInTheDocument();
       });
 
       const userAssignmentsTab = screen.getByRole('tab', {
@@ -1075,10 +1078,10 @@ describe('Role & Permission Management Page', () => {
         expect(screen.getByRole('dialog')).toBeInTheDocument();
       });
 
-      const analystCheckbox = screen.getByRole('checkbox', {
-        name: /analyst/i,
+      const approverL1Checkbox = screen.getByRole('checkbox', {
+        name: /approver level 1/i,
       });
-      await user.click(analystCheckbox);
+      await user.click(approverL1Checkbox);
 
       const saveButton = screen.getByRole('button', {
         name: /save role changes/i,
@@ -1096,7 +1099,7 @@ describe('Role & Permission Management Page', () => {
   });
 
   describe('Segregation of Duties Warning', () => {
-    it('shows warning modal when Operations Lead and Approver Level 1 are both selected', async () => {
+    it('shows warning modal when Analyst and Approver Level 1 are both selected', async () => {
       const user = userEvent.setup();
       const mockUser = createMockAdminUser();
       const mockRoles = createAllSystemRoles();
@@ -1104,7 +1107,7 @@ describe('Role & Permission Management Page', () => {
         items: [createMockUserDetail()],
         meta: { page: 1, pageSize: 20, totalItems: 1, totalPages: 1 },
       };
-      const currentRoles = [createMockRole()];
+      const currentRoles = [createMockRole({ id: 2, name: 'Analyst' })];
 
       (authApi.getCurrentUser as ReturnType<typeof vi.fn>).mockResolvedValue(
         mockUser,
@@ -1122,7 +1125,7 @@ describe('Role & Permission Management Page', () => {
       render(<RolesPage />);
 
       await waitFor(() => {
-        expect(screen.getByText(/operations lead/i)).toBeInTheDocument();
+        expect(screen.getByText(/analyst/i)).toBeInTheDocument();
       });
 
       const userAssignmentsTab = screen.getByRole('tab', {
@@ -1174,7 +1177,7 @@ describe('Role & Permission Management Page', () => {
         items: [createMockUserDetail()],
         meta: { page: 1, pageSize: 20, totalItems: 1, totalPages: 1 },
       };
-      const currentRoles = [createMockRole()];
+      const currentRoles = [createMockRole({ id: 2, name: 'Analyst' })];
 
       (authApi.getCurrentUser as ReturnType<typeof vi.fn>).mockResolvedValue(
         mockUser,
@@ -1192,7 +1195,7 @@ describe('Role & Permission Management Page', () => {
       render(<RolesPage />);
 
       await waitFor(() => {
-        expect(screen.getByText(/operations lead/i)).toBeInTheDocument();
+        expect(screen.getByText(/analyst/i)).toBeInTheDocument();
       });
 
       const userAssignmentsTab = screen.getByRole('tab', {
@@ -1244,9 +1247,9 @@ describe('Role & Permission Management Page', () => {
         items: [createMockUserDetail()],
         meta: { page: 1, pageSize: 20, totalItems: 1, totalPages: 1 },
       };
-      const currentRoles = [createMockRole()];
+      const currentRoles = [createMockRole({ id: 2, name: 'Analyst' })];
       const updatedRoles = [
-        createMockRole(),
+        createMockRole({ id: 2, name: 'Analyst' }),
         createMockRole({ id: 3, name: 'ApproverL1' }),
       ];
 
@@ -1269,7 +1272,7 @@ describe('Role & Permission Management Page', () => {
       render(<RolesPage />);
 
       await waitFor(() => {
-        expect(screen.getByText(/operations lead/i)).toBeInTheDocument();
+        expect(screen.getByText(/analyst/i)).toBeInTheDocument();
       });
 
       const userAssignmentsTab = screen.getByRole('tab', {
@@ -1318,7 +1321,7 @@ describe('Role & Permission Management Page', () => {
         expect(usersApi.updateUserRoles).toHaveBeenCalledWith(
           1,
           expect.objectContaining({
-            roleIds: expect.arrayContaining([1, 3]),
+            roleIds: expect.arrayContaining([2, 3]),
           }),
           'admin',
         );
@@ -1333,7 +1336,7 @@ describe('Role & Permission Management Page', () => {
         items: [createMockUserDetail()],
         meta: { page: 1, pageSize: 20, totalItems: 1, totalPages: 1 },
       };
-      const currentRoles = [createMockRole()];
+      const currentRoles = [createMockRole({ id: 2, name: 'Analyst' })];
 
       (authApi.getCurrentUser as ReturnType<typeof vi.fn>).mockResolvedValue(
         mockUser,
@@ -1351,7 +1354,7 @@ describe('Role & Permission Management Page', () => {
       render(<RolesPage />);
 
       await waitFor(() => {
-        expect(screen.getByText(/operations lead/i)).toBeInTheDocument();
+        expect(screen.getByText(/analyst/i)).toBeInTheDocument();
       });
 
       const userAssignmentsTab = screen.getByRole('tab', {
@@ -1435,7 +1438,7 @@ describe('Role & Permission Management Page', () => {
       render(<RolesPage />);
 
       await waitFor(() => {
-        expect(screen.getByText(/operations lead/i)).toBeInTheDocument();
+        expect(screen.getByText(/analyst/i)).toBeInTheDocument();
       });
 
       const userAssignmentsTab = screen.getByRole('tab', {

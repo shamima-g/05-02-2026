@@ -61,3 +61,16 @@ export function hasAllPermissions(
   if (!user) return false;
   return permissions.every((p) => user.permissions.includes(p));
 }
+
+/**
+ * Check if a user has access to a specific page path.
+ * Uses the allowedPages array from the user's role(s) (cumulative).
+ */
+export function hasPageAccess(
+  user: AuthUser | null | undefined,
+  path: string,
+): boolean {
+  if (!user) return false;
+  if (!user.allowedPages || user.allowedPages.length === 0) return false;
+  return user.allowedPages.includes(path);
+}

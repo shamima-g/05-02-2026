@@ -1,7 +1,12 @@
-# Screen: Approval Review Screen
+# Screen: Approval Review Screens (3 Separate Pages)
 
 ## Purpose
-Read-only view for approvers showing validation results, comments, approval history, and approve/reject actions with mandatory rejection reason.
+Read-only view for approvers showing validation results, comments, approval history, and approve/reject actions with mandatory rejection reason. Each approval level has its own dedicated page:
+- `/approvals/level-1` - Approver Level 1 only (Operations approval)
+- `/approvals/level-2` - Approver Level 2 only (Portfolio Manager approval)
+- `/approvals/level-3` - Approver Level 3 only (Executive approval)
+
+Each approver role can ONLY access their specific level page. The wireframe below shows the shared layout; the header and instructions differ per level.
 
 ## Wireframe
 ```
@@ -14,7 +19,7 @@ Read-only view for approvers showing validation results, comments, approval hist
 |  Approval Review - LEVEL 2 (Portfolio Manager)                              |
 |                                                                              |
 |  Batch: January 2026 | Reporting Date: 2026-01-31                           |
-|  Submitted for Level 2 Approval: 2026-01-06 10:45 by Operations Lead        |
+|  Submitted for Level 2 Approval: 2026-01-06 10:45 by Analyst        |
 |                                                                              |
 |  +------------------------------------------------------------------------+  |
 |  |  APPROVAL INSTRUCTIONS                                                 |  |
@@ -175,11 +180,21 @@ Focus on:
 - Material issues or concerns
 - Final sign-off before publication
 
+## Routes
+
+| Route | Role Required | Focus |
+|-------|--------------|-------|
+| `/approvals/level-1` | Approver Level 1 | File completeness, data validation |
+| `/approvals/level-2` | Approver Level 2 | Holdings reasonableness, performance |
+| `/approvals/level-3` | Approver Level 3 | Overall report quality, final sign-off |
+
 ## Navigation
 - **From:** Dashboard pending actions (when batch awaiting user's approval level)
 - **To:** Dashboard (after decision submission), validation details, calculation monitor
 
 ## State Dependencies
+- Each approval page is ONLY accessible to users with the corresponding approver role
+- Users without the matching role are redirected to `/auth/forbidden`
 - Only visible when batch is at user's approval level
 - All data is read-only (no edit capabilities)
 - [Submit Decision] button disabled until radio selection made

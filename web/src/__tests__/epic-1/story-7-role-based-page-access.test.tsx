@@ -4,8 +4,8 @@
  *
  * Validates:
  * - Admin pages restricted to admin role
- * - Approvals page restricted to approvers
- * - Batches page restricted to operations lead
+ * - Approval level pages restricted to matching approver via allowedPages
+ * - Batches page restricted to analysts via allowedPages
  * - Redirects to /auth/forbidden when unauthorized
  */
 
@@ -28,7 +28,9 @@ vi.mock('@/lib/api/users', () => ({
 
 // Import pages after mocks
 import AdminUsersPage from '@/app/admin/users/page';
-import ApprovalsPage from '@/app/approvals/page';
+import ApprovalLevel1Page from '@/app/approvals/level-1/page';
+import ApprovalLevel2Page from '@/app/approvals/level-2/page';
+import ApprovalLevel3Page from '@/app/approvals/level-3/page';
 import BatchesPage from '@/app/batches/page';
 
 const mockGetSession = getSession as unknown as ReturnType<typeof vi.fn>;
@@ -37,6 +39,7 @@ const mockRedirect = redirect as unknown as ReturnType<typeof vi.fn>;
 function createMockUser(
   roles: UserRole[],
   permissions: string[] = [],
+  allowedPages: string[] = [],
 ): AuthUser {
   return {
     id: 'user-1',
@@ -45,6 +48,7 @@ function createMockUser(
     email: 'test@example.com',
     roles,
     permissions,
+    allowedPages,
   };
 }
 
@@ -68,7 +72,7 @@ describe('Role-Based Page Access Control', () => {
 
     it('redirects non-admin to forbidden page when accessing admin users', async () => {
       mockGetSession.mockResolvedValue(
-        createMockUser([UserRole.OperationsLead], ['batches:read']),
+        createMockUser([UserRole.Analyst], ['batches:read']),
       );
 
       await expect(AdminUsersPage()).rejects.toThrow('NEXT_REDIRECT');
@@ -85,66 +89,86 @@ describe('Role-Based Page Access Control', () => {
     });
   });
 
-  describe('Approvals Page', () => {
-    it('allows approver_level_1 to access approvals page', async () => {
+  describe('Approval Level Pages', () => {
+    it('allows approver_level_1 to access approval level 1 page', async () => {
       mockGetSession.mockResolvedValue(
-        createMockUser([UserRole.ApproverL1], ['approvals:read']),
+        createMockUser(
+          [UserRole.ApproverL1],
+          ['approvals:read'],
+          ['/approvals/level-1'],
+        ),
       );
 
-      await expect(ApprovalsPage()).resolves.toBeDefined();
+      await expect(ApprovalLevel1Page()).resolves.toBeDefined();
       expect(mockRedirect).not.toHaveBeenCalled();
     });
 
-    it('allows approver_level_2 to access approvals page', async () => {
+    it('allows approver_level_2 to access approval level 2 page', async () => {
       mockGetSession.mockResolvedValue(
-        createMockUser([UserRole.ApproverL2], ['approvals:read']),
+        createMockUser(
+          [UserRole.ApproverL2],
+          ['approvals:read'],
+          ['/approvals/level-2'],
+        ),
       );
 
-      await expect(ApprovalsPage()).resolves.toBeDefined();
+      await expect(ApprovalLevel2Page()).resolves.toBeDefined();
       expect(mockRedirect).not.toHaveBeenCalled();
     });
 
-    it('allows approver_level_3 to access approvals page', async () => {
+    it('allows approver_level_3 to access approval level 3 page', async () => {
       mockGetSession.mockResolvedValue(
-        createMockUser([UserRole.ApproverL3], ['approvals:read']),
+        createMockUser(
+          [UserRole.ApproverL3],
+          ['approvals:read'],
+          ['/approvals/level-3'],
+        ),
       );
 
-      await expect(ApprovalsPage()).resolves.toBeDefined();
+      await expect(ApprovalLevel3Page()).resolves.toBeDefined();
       expect(mockRedirect).not.toHaveBeenCalled();
     });
 
     it('redirects non-approver to forbidden page', async () => {
       mockGetSession.mockResolvedValue(
-        createMockUser([UserRole.OperationsLead], ['batches:read']),
+        createMockUser([UserRole.Analyst], ['batches:read'], ['/batches']),
       );
 
-      await expect(ApprovalsPage()).rejects.toThrow('NEXT_REDIRECT');
+      await expect(ApprovalLevel1Page()).rejects.toThrow('NEXT_REDIRECT');
       expect(mockRedirect).toHaveBeenCalledWith('/auth/forbidden');
     });
   });
 
   describe('Batches Page', () => {
-    it('allows operations_lead to access batches page', async () => {
+    it('allows analyst to access batches page', async () => {
       mockGetSession.mockResolvedValue(
-        createMockUser([UserRole.OperationsLead], ['batches:read']),
+        createMockUser([UserRole.Analyst], ['batches:read'], ['/batches']),
       );
 
       await expect(BatchesPage()).resolves.toBeDefined();
       expect(mockRedirect).not.toHaveBeenCalled();
     });
 
-    it('redirects non-operations lead to forbidden page', async () => {
+    it('redirects non-analyst to forbidden page', async () => {
       mockGetSession.mockResolvedValue(
-        createMockUser([UserRole.ApproverL1], ['approvals:read']),
+        createMockUser(
+          [UserRole.ApproverL1],
+          ['approvals:read'],
+          ['/approvals/level-1'],
+        ),
       );
 
       await expect(BatchesPage()).rejects.toThrow('NEXT_REDIRECT');
       expect(mockRedirect).toHaveBeenCalledWith('/auth/forbidden');
     });
 
-    it('redirects admin without operations_lead role to forbidden page', async () => {
+    it('redirects admin without analyst role to forbidden page', async () => {
       mockGetSession.mockResolvedValue(
-        createMockUser([UserRole.Administrator], ['users:read']),
+        createMockUser(
+          [UserRole.Administrator],
+          ['users:read'],
+          ['/admin/users'],
+        ),
       );
 
       await expect(BatchesPage()).rejects.toThrow('NEXT_REDIRECT');

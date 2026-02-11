@@ -20,9 +20,9 @@
 - [ ] Given I view the workflow history, when I see an event, then each event shows icon (📍), timestamp, event type (e.g., "LEVEL 1 APPROVED"), user who triggered it, action description, and automated actions
 
 ### Event Types and Details
-- [ ] Given a batch was created, when I view the workflow history, then I see event "📍 2026-01-05 09:00 - BATCH CREATED" with user "John Smith (Operations Lead)", action "Created batch for January 2026 reporting", and reporting date
+- [ ] Given a batch was created, when I view the workflow history, then I see event "📍 2026-01-05 09:00 - BATCH CREATED" with user "John Smith (Analyst)", action "Created batch for January 2026 reporting", and reporting date
 - [ ] Given data was confirmed, when I view the workflow history, then I see event "📍 2026-01-06 10:45 - DATA CONFIRMED READY" with user, action "Confirmed data ready for approval", and automated actions "Workflow transitioned to Level 1 Approval, Validation snapshot captured, Notification sent to Level 1 Approver"
-- [ ] Given Level 1 approval was granted, when I view the workflow history, then I see event "📍 2026-01-06 11:30 - LEVEL 1 APPROVED" with user "John Smith (Operations Lead)", approval comment, and automated actions "Workflow transitioned to Level 2 Approval, Data entry capabilities locked, Notification sent to Portfolio Manager"
+- [ ] Given Level 1 approval was granted, when I view the workflow history, then I see event "📍 2026-01-06 11:30 - LEVEL 1 APPROVED" with user "John Smith (Analyst)", approval comment, and automated actions "Workflow transitioned to Level 2 Approval, Data entry capabilities locked, Notification sent to Portfolio Manager"
 
 ### Approval Events with Comments
 - [ ] Given an approver added a comment during approval, when I view the approval event, then I see "Comment: 'All files received. 5 instruments missing ratings, documented and acceptable for this reporting period.'"
@@ -30,7 +30,7 @@
 
 ### Rejection Events
 - [ ] Given a batch was rejected at Level 1, when I view the workflow history, then I see event "📍 2026-01-07 14:20 - LEVEL 1 REJECTED" with prominent red styling
-- [ ] Given a rejection event, when I view its details, then I see user "John Smith (Operations Approver)", action "Rejected and returned to Data Preparation", rejection reason "Missing custodian verification files for ZAR holdings. Cannot approve without independent verification.", and automated actions "• Workflow transitioned to Data Preparation, • All calculations cleared, • Data entry capabilities unlocked, • Notification sent to Operations Lead, • All subsequent approvals reset (Level 2, Level 3)"
+- [ ] Given a rejection event, when I view its details, then I see user "John Smith (Operations Approver)", action "Rejected and returned to Data Preparation", rejection reason "Missing custodian verification files for ZAR holdings. Cannot approve without independent verification.", and automated actions "• Workflow transitioned to Data Preparation, • All calculations cleared, • Data entry capabilities unlocked, • Notification sent to Analyst, • All subsequent approvals reset (Level 2, Level 3)"
 
 ### System-Generated Events
 - [ ] Given calculations completed, when I view the workflow history, then I see event "📍 2026-01-06 10:30 - CALCULATIONS COMPLETED" with "System Action: Calculations executed successfully", duration "2m 34s", and result "All calculations passed validation"

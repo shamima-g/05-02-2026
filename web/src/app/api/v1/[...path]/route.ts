@@ -6,12 +6,10 @@
  *
  * Test Users (all passwords: "password"):
  *   admin      - Administrator
- *   opsleader  - Operations Lead
  *   analyst    - Analyst
  *   approver1  - Approver Level 1
  *   approver2  - Approver Level 2
  *   approver3  - Approver Level 3
- *   readonly   - Read Only
  */
 
 import { NextRequest, NextResponse } from 'next/server';
@@ -69,6 +67,7 @@ interface MockUser {
     isSystemRole: boolean;
   }[];
   permissions: string[];
+  allowedPages: string[];
   isActive: boolean;
   deactivationReason: string | null;
   deactivatedAt: string | null;
@@ -87,42 +86,41 @@ const ROLES = [
     name: 'Administrator',
     description: 'User management, configuration, audit access',
     isSystemRole: true,
+    allowedPages: ['/admin/users', '/admin/roles', '/admin/audit-trail'],
   },
   {
     id: 2,
-    name: 'OperationsLead',
-    description: 'Full data entry, file management, workflow orchestration',
-    isSystemRole: false,
+    name: 'Analyst',
+    description: 'All pages except Approval L1/L2/L3 and User Management',
+    isSystemRole: true,
+    allowedPages: [
+      '/batches',
+      '/files',
+      '/validation',
+      '/master-data',
+      '/admin/audit-trail',
+    ],
   },
   {
     id: 3,
-    name: 'Analyst',
-    description: 'Data correction and maintenance, commentary',
-    isSystemRole: false,
+    name: 'ApproverL1',
+    description: 'Operations level approval - data completeness verification',
+    isSystemRole: true,
+    allowedPages: ['/approvals/level-1'],
   },
   {
     id: 4,
-    name: 'ApproverL1',
-    description: 'Operations level approval - data completeness verification',
-    isSystemRole: false,
+    name: 'ApproverL2',
+    description: 'Portfolio Manager level approval - holdings reasonableness',
+    isSystemRole: true,
+    allowedPages: ['/approvals/level-2'],
   },
   {
     id: 5,
-    name: 'ApproverL2',
-    description: 'Portfolio Manager level approval - holdings reasonableness',
-    isSystemRole: false,
-  },
-  {
-    id: 6,
     name: 'ApproverL3',
     description: 'Executive level approval - final sign-off',
-    isSystemRole: false,
-  },
-  {
-    id: 7,
-    name: 'ReadOnly',
-    description: 'View access for reporting and analysis',
-    isSystemRole: false,
+    isSystemRole: true,
+    allowedPages: ['/approvals/level-3'],
   },
 ];
 
@@ -137,7 +135,7 @@ const PERMISSIONS: Record<string, string[]> = {
     'audit.export',
     'config.manage',
   ],
-  OperationsLead: [
+  Analyst: [
     'batch.create',
     'batch.view',
     'batch.confirm',
@@ -148,12 +146,6 @@ const PERMISSIONS: Record<string, string[]> = {
     'portfolio.view',
     'file.upload',
     'file.download',
-  ],
-  Analyst: [
-    'batch.view',
-    'instrument.view',
-    'instrument.update',
-    'portfolio.view',
     'commentary.create',
     'commentary.update',
   ],
@@ -178,7 +170,6 @@ const PERMISSIONS: Record<string, string[]> = {
     'portfolio.view',
     'approval.level3',
   ],
-  ReadOnly: ['batch.view', 'instrument.view', 'portfolio.view', 'report.view'],
 };
 
 const ROLE_PERMISSIONS: Record<
@@ -191,43 +182,33 @@ const ROLE_PERMISSIONS: Record<
     description: `Permission: ${p}`,
     category: 'Administration',
   })),
-  2: PERMISSIONS.OperationsLead.map((p, i) => ({
+  2: PERMISSIONS.Analyst.map((p, i) => ({
     id: 200 + i,
-    name: p,
-    description: `Permission: ${p}`,
-    category: 'Operations',
-  })),
-  3: PERMISSIONS.Analyst.map((p, i) => ({
-    id: 300 + i,
     name: p,
     description: `Permission: ${p}`,
     category: 'Analysis',
   })),
-  4: PERMISSIONS.ApproverL1.map((p, i) => ({
+  3: PERMISSIONS.ApproverL1.map((p, i) => ({
+    id: 300 + i,
+    name: p,
+    description: `Permission: ${p}`,
+    category: 'Approvals',
+  })),
+  4: PERMISSIONS.ApproverL2.map((p, i) => ({
     id: 400 + i,
     name: p,
     description: `Permission: ${p}`,
     category: 'Approvals',
   })),
-  5: PERMISSIONS.ApproverL2.map((p, i) => ({
+  5: PERMISSIONS.ApproverL3.map((p, i) => ({
     id: 500 + i,
     name: p,
     description: `Permission: ${p}`,
     category: 'Approvals',
   })),
-  6: PERMISSIONS.ApproverL3.map((p, i) => ({
-    id: 600 + i,
-    name: p,
-    description: `Permission: ${p}`,
-    category: 'Approvals',
-  })),
-  7: PERMISSIONS.ReadOnly.map((p, i) => ({
-    id: 700 + i,
-    name: p,
-    description: `Permission: ${p}`,
-    category: 'Viewing',
-  })),
 };
+
+const ALL_PERMISSIONS = Object.values(ROLE_PERMISSIONS).flat();
 
 function makeUser(
   id: number,
@@ -241,6 +222,7 @@ function makeUser(
 ): MockUser {
   const userRoles = roleIds.map((rid) => ROLES.find((r) => r.id === rid)!);
   const perms = userRoles.flatMap((r) => PERMISSIONS[r.name] || []);
+  const pages = userRoles.flatMap((r) => r.allowedPages || []);
   return {
     id,
     username,
@@ -253,6 +235,7 @@ function makeUser(
     employeeId: `EMP-${String(id).padStart(4, '0')}`,
     roles: userRoles,
     permissions: [...new Set(perms)],
+    allowedPages: [...new Set(pages)],
     isActive: active,
     deactivationReason: active ? null : 'Account deactivated for testing',
     deactivatedAt: active ? null : '2026-02-01T10:00:00Z',
@@ -270,62 +253,42 @@ const MOCK_USERS: MockUser[] = [
   makeUser(1, 'admin', 'Sarah', 'Chen', 'IT', 'System Administrator', [1]),
   makeUser(
     2,
-    'opsleader',
-    'Michael',
-    'Rodriguez',
-    'Operations',
-    'Operations Lead',
-    [2],
-  ),
-  makeUser(
-    3,
     'analyst',
     'Emily',
     'Johnson',
     'Operations',
     'Investment Analyst',
-    [3],
+    [2],
   ),
-  makeUser(4, 'approver1', 'David', 'Kim', 'Operations', 'Senior Analyst', [4]),
-  makeUser(5, 'approver2', 'Lisa', 'Wang', 'Finance', 'Portfolio Manager', [5]),
+  makeUser(3, 'approver1', 'David', 'Kim', 'Operations', 'Senior Analyst', [3]),
+  makeUser(4, 'approver2', 'Lisa', 'Wang', 'Finance', 'Portfolio Manager', [4]),
   makeUser(
-    6,
+    5,
     'approver3',
     'James',
     'Thompson',
     'Finance',
     'Chief Investment Officer',
-    [6],
+    [5],
   ),
   makeUser(
-    7,
-    'readonly',
-    'Anna',
-    'Mueller',
-    'Compliance',
-    'Compliance Officer',
-    [7],
-  ),
-  makeUser(
-    8,
+    6,
     'multiuser',
     'Robert',
     'Brown',
     'Operations',
-    'Senior Operations Lead',
-    [2, 4],
+    'Senior Analyst',
+    [2, 3],
   ),
-  makeUser(9, 'inactive', 'Tom', 'Wilson', 'IT', 'Former Analyst', [3], false),
+  makeUser(7, 'inactive', 'Tom', 'Wilson', 'IT', 'Former Analyst', [2], false),
 ];
 
 const TEST_PASSWORDS: Record<string, string> = {
   admin: 'password',
-  opsleader: 'password',
   analyst: 'password',
   approver1: 'password',
   approver2: 'password',
   approver3: 'password',
-  readonly: 'password',
   multiuser: 'password',
   inactive: 'password',
 };
@@ -333,7 +296,7 @@ const TEST_PASSWORDS: Record<string, string> = {
 const MOCK_APPROVAL_AUTHORITIES = [
   {
     id: 1,
-    userId: 4,
+    userId: 3,
     username: 'approver1',
     displayName: 'David Kim',
     email: 'approver1@investinsight.com',
@@ -352,7 +315,7 @@ const MOCK_APPROVAL_AUTHORITIES = [
   },
   {
     id: 2,
-    userId: 5,
+    userId: 4,
     username: 'approver2',
     displayName: 'Lisa Wang',
     email: 'approver2@investinsight.com',
@@ -371,7 +334,7 @@ const MOCK_APPROVAL_AUTHORITIES = [
   },
   {
     id: 3,
-    userId: 6,
+    userId: 5,
     username: 'approver3',
     displayName: 'James Thompson',
     email: 'approver3@investinsight.com',
@@ -429,6 +392,7 @@ export async function GET(request: NextRequest) {
       email: user.email,
       roles: user.roles.map((r) => r.name),
       permissions: user.permissions,
+      allowedPages: user.allowedPages,
     });
   }
 
@@ -558,6 +522,11 @@ export async function GET(request: NextRequest) {
     const role = ROLES.find((r) => r.id === Number(seg[1]));
     if (!role) return json({ message: 'Role not found' }, 404);
     return json({ ...role, permissions: ROLE_PERMISSIONS[role.id] || [] });
+  }
+
+  // GET /permissions
+  if (path === 'permissions') {
+    return json(ALL_PERMISSIONS);
   }
 
   // GET /dashboard/pending-actions
@@ -774,6 +743,7 @@ export async function POST(request: NextRequest) {
       email: user.email,
       roles: user.roles.map((r) => r.name),
       permissions: user.permissions,
+      allowedPages: user.allowedPages,
       exp: Math.floor(Date.now() / 1000) + 1800, // 30 min
     };
 
@@ -795,6 +765,7 @@ export async function POST(request: NextRequest) {
         email: user.email,
         roles: user.roles.map((r) => r.name),
         permissions: user.permissions,
+        allowedPages: user.allowedPages,
       },
     });
   }
@@ -812,6 +783,7 @@ export async function POST(request: NextRequest) {
         email: mockUser.email,
         roles: mockUser.roles.map((r) => r.name),
         permissions: mockUser.permissions,
+        allowedPages: mockUser.allowedPages,
         exp: Math.floor(Date.now() / 1000) + 1800,
       };
       return json({
@@ -828,6 +800,7 @@ export async function POST(request: NextRequest) {
       email: user.email,
       roles: user.roles.map((r) => r.name),
       permissions: user.permissions,
+      allowedPages: user.allowedPages,
       exp: Math.floor(Date.now() / 1000) + 1800,
     };
 
@@ -851,6 +824,7 @@ export async function POST(request: NextRequest) {
       .map((rid) => ROLES.find((r) => r.id === rid)!)
       .filter(Boolean);
     const perms = userRoles.flatMap((r) => PERMISSIONS[r.name] || []);
+    const pages = userRoles.flatMap((r) => r.allowedPages || []);
 
     const newUser = {
       id: newId,
@@ -864,6 +838,7 @@ export async function POST(request: NextRequest) {
       employeeId: body.employeeId || `EMP-${String(newId).padStart(4, '0')}`,
       roles: userRoles,
       permissions: [...new Set(perms)],
+      allowedPages: [...new Set(pages)],
       isActive: true,
       deactivationReason: null,
       deactivatedAt: null,
@@ -901,6 +876,22 @@ export async function POST(request: NextRequest) {
       deactivationReason: null,
       deactivatedAt: null,
     });
+  }
+
+  // POST /roles
+  if (path === 'roles') {
+    const newId = ROLES.length + 1;
+    const permIds = (body.permissionIds as number[]) || [];
+    const rolePerms = ALL_PERMISSIONS.filter((p) => permIds.includes(p.id));
+    const newRole = {
+      id: newId,
+      name: body.name as string,
+      description: (body.description as string) || null,
+      isSystemRole: false,
+      allowedPages: (body.allowedPages as string[]) || [],
+      permissions: rolePerms,
+    };
+    return json(newRole, 201);
   }
 
   // POST /approval-authorities
@@ -964,6 +955,21 @@ export async function PUT(request: NextRequest) {
       .map((rid) => ROLES.find((r) => r.id === rid)!)
       .filter(Boolean);
     return json(userRoles);
+  }
+
+  // PUT /roles/:id
+  if (seg[0] === 'roles' && seg.length === 2 && !isNaN(Number(seg[1]))) {
+    const role = ROLES.find((r) => r.id === Number(seg[1]));
+    if (!role) return json({ message: 'Role not found' }, 404);
+    const permIds = (body.permissionIds as number[]) || [];
+    const rolePerms = ALL_PERMISSIONS.filter((p) => permIds.includes(p.id));
+    return json({
+      ...role,
+      description: (body.description as string) ?? role.description,
+      allowedPages: (body.allowedPages as string[]) ?? role.allowedPages,
+      permissions:
+        rolePerms.length > 0 ? rolePerms : ROLE_PERMISSIONS[role.id] || [],
+    });
   }
 
   // PUT /approval-authorities/:id

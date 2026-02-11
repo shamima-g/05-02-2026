@@ -18,7 +18,7 @@ Create new reporting batches, view active batches, switch between reporting peri
 |  +------------------------------------------------------------------------+  |
 |  |  BATCH: January 2026                              Status: Level 1 ✓    |  |
 |  +------------------------------------------------------------------------+  |
-|  |  Created: 2026-01-05 by Operations Lead                                |  |
+|  |  Created: 2026-01-05 by Analyst                                |  |
 |  |  Reporting Date: 2026-01-31                                            |  |
 |  |  Current Stage: Level 2 Approval (Awaiting PM Review)                  |  |
 |  |                                                                        |  |
@@ -33,7 +33,7 @@ Create new reporting batches, view active batches, switch between reporting peri
 |  +------------------------------------------------------------------------+  |
 |  |  BATCH: December 2025                         Status: Data Preparation |  |
 |  +------------------------------------------------------------------------+  |
-|  |  Created: 2025-12-02 by Operations Lead                                |  |
+|  |  Created: 2025-12-02 by Analyst                                |  |
 |  |  Reporting Date: 2025-12-31                                            |  |
 |  |  Current Stage: Data Preparation (Correcting after rejection)          |  |
 |  |                                                                        |  |

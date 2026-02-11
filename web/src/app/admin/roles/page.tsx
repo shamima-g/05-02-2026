@@ -8,8 +8,16 @@ import {
   listRoles,
   getRoleWithPermissions,
   getUsersWithRole,
+  createRole,
+  updateRole,
+  listPermissions,
 } from '@/lib/api/roles';
-import type { RoleWithPermissions, Permission } from '@/lib/api/roles';
+import type {
+  RoleWithPermissions,
+  Permission,
+  CreateRoleRequest,
+  UpdateRoleRequest,
+} from '@/lib/api/roles';
 import { listUsers, getUserRoles, updateUserRoles } from '@/lib/api/users';
 import type { UserDetail } from '@/lib/api/users';
 import {
@@ -86,14 +94,26 @@ const LEVEL_CONFIG: {
   },
 ];
 
+const AVAILABLE_PAGES = [
+  { path: '/', label: 'Dashboard' },
+  { path: '/batches', label: 'Batches' },
+  { path: '/files', label: 'Files' },
+  { path: '/validation', label: 'Validation' },
+  { path: '/master-data', label: 'Master Data' },
+  { path: '/approvals/level-1', label: 'Approval Level 1' },
+  { path: '/approvals/level-2', label: 'Approval Level 2' },
+  { path: '/approvals/level-3', label: 'Approval Level 3' },
+  { path: '/admin/users', label: 'Users' },
+  { path: '/admin/roles', label: 'Roles' },
+  { path: '/admin/audit-trail', label: 'Audit Trail' },
+];
+
 function formatRoleName(name: string): string {
-  if (name === 'OperationsLead') return 'Operations Lead';
   if (name === 'Analyst') return 'Analyst';
   if (name === 'ApproverL1') return 'Approver Level 1';
   if (name === 'ApproverL2') return 'Approver Level 2';
   if (name === 'ApproverL3') return 'Approver Level 3';
   if (name === 'Administrator') return 'Administrator';
-  if (name === 'ReadOnly') return 'Read-Only';
   return name;
 }
 
@@ -180,6 +200,17 @@ export default function RolesPage() {
   const [backupError, setBackupError] = useState('');
   const [configSaved, setConfigSaved] = useState(false);
   const [removeWarning, setRemoveWarning] = useState('');
+
+  const [createRoleModalOpen, setCreateRoleModalOpen] = useState(false);
+  const [editRoleModalOpen, setEditRoleModalOpen] = useState(false);
+  const [allPermissions, setAllPermissions] = useState<Permission[]>([]);
+  const [roleForm, setRoleForm] = useState({
+    name: '',
+    description: '',
+    permissionIds: [] as number[],
+    allowedPages: [] as string[],
+  });
+  const [roleFormErrors, setRoleFormErrors] = useState<string[]>([]);
 
   const fetchRoles = useCallback(async () => {
     try {
@@ -334,9 +365,9 @@ export default function RolesPage() {
       setModifyErrors(['Reason for change is required for audit trail']);
       return;
     }
-    const hasOperationsLead = modifyForm.roleIds.includes(1);
+    const hasAnalyst = modifyForm.roleIds.includes(2);
     const hasApproverL1 = modifyForm.roleIds.includes(3);
-    if (hasOperationsLead && hasApproverL1) {
+    if (hasAnalyst && hasApproverL1) {
       setSodWarningModalOpen(true);
       return;
     }
@@ -514,6 +545,113 @@ export default function RolesPage() {
     setConfigSaved(true);
   };
 
+  // --- Create/Edit Role handlers ---
+
+  const handleOpenCreateRole = async () => {
+    setRoleForm({
+      name: '',
+      description: '',
+      permissionIds: [],
+      allowedPages: [],
+    });
+    setRoleFormErrors([]);
+    setCreateRoleModalOpen(true);
+    try {
+      const perms = await listPermissions();
+      setAllPermissions(perms);
+    } catch {
+      // handled silently
+    }
+  };
+
+  const handleSaveNewRole = async () => {
+    if (!roleForm.name.trim()) {
+      setRoleFormErrors(['Role name is required']);
+      return;
+    }
+    if (roleForm.permissionIds.length === 0) {
+      setRoleFormErrors(['At least one permission must be selected']);
+      return;
+    }
+    if (roleForm.allowedPages.length === 0) {
+      setRoleFormErrors(['At least one page must be selected']);
+      return;
+    }
+    try {
+      await createRole({
+        name: roleForm.name,
+        description: roleForm.description || undefined,
+        permissionIds: roleForm.permissionIds,
+        allowedPages: roleForm.allowedPages,
+      });
+      setCreateRoleModalOpen(false);
+      await fetchRoles();
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Failed to create role';
+      setRoleFormErrors([msg]);
+    }
+  };
+
+  const handleOpenEditRole = async (role: RoleWithPermissions) => {
+    setSelectedRole(role);
+    setRoleForm({
+      name: role.name,
+      description: role.description || '',
+      permissionIds: role.permissions.map((p) => p.id),
+      allowedPages: role.allowedPages || [],
+    });
+    setRoleFormErrors([]);
+    setEditRoleModalOpen(true);
+    try {
+      const perms = await listPermissions();
+      setAllPermissions(perms);
+    } catch {
+      // handled silently
+    }
+  };
+
+  const handleSaveEditRole = async () => {
+    if (!selectedRole) return;
+    if (roleForm.permissionIds.length === 0) {
+      setRoleFormErrors(['At least one permission must be selected']);
+      return;
+    }
+    if (roleForm.allowedPages.length === 0) {
+      setRoleFormErrors(['At least one page must be selected']);
+      return;
+    }
+    try {
+      await updateRole(selectedRole.id, {
+        description: roleForm.description || undefined,
+        permissionIds: roleForm.permissionIds,
+        allowedPages: roleForm.allowedPages,
+      });
+      setEditRoleModalOpen(false);
+      await fetchRoles();
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Failed to update role';
+      setRoleFormErrors([msg]);
+    }
+  };
+
+  const toggleRoleFormPermission = (permId: number) => {
+    setRoleForm((prev) => ({
+      ...prev,
+      permissionIds: prev.permissionIds.includes(permId)
+        ? prev.permissionIds.filter((id) => id !== permId)
+        : [...prev.permissionIds, permId],
+    }));
+  };
+
+  const toggleRoleFormPage = (page: string) => {
+    setRoleForm((prev) => ({
+      ...prev,
+      allowedPages: prev.allowedPages.includes(page)
+        ? prev.allowedPages.filter((p) => p !== page)
+        : [...prev.allowedPages, page],
+    }));
+  };
+
   // --- Render ---
 
   if (loading) {
@@ -560,6 +698,9 @@ export default function RolesPage() {
         </TabsList>
 
         <TabsContent value="definitions" className="mt-6">
+          <div className="flex justify-end mb-4">
+            <Button onClick={handleOpenCreateRole}>+ Create Role</Button>
+          </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {roles.map((role) => (
               <Card key={role.id}>
@@ -568,8 +709,14 @@ export default function RolesPage() {
                   <CardDescription>{role.description}</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-sm text-muted-foreground mb-4">
+                  <p className="text-sm text-muted-foreground mb-2">
                     {userCounts[role.id] ?? 0} users
+                  </p>
+                  <p className="text-xs text-muted-foreground mb-4">
+                    Pages:{' '}
+                    {(
+                      role as RoleWithPermissions & { allowedPages?: string[] }
+                    ).allowedPages?.join(', ') || 'None'}
                   </p>
                   <div className="flex gap-2">
                     <Button
@@ -585,6 +732,13 @@ export default function RolesPage() {
                       onClick={() => handleViewAssignedUsers(role)}
                     >
                       View Assigned Users
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => handleOpenEditRole(role)}
+                    >
+                      Edit Role
                     </Button>
                   </div>
                 </CardContent>
@@ -1005,7 +1159,7 @@ export default function RolesPage() {
           </DialogHeader>
 
           <p className="text-sm">
-            Assigning both Operations Lead and Approver Level 1 roles creates a
+            Assigning both Analyst and Approver Level 1 roles creates a
             potential conflict. Please choose how to proceed.
           </p>
 
@@ -1271,6 +1425,181 @@ export default function RolesPage() {
               Cancel
             </Button>
             {backupEditMode && <Button onClick={handleSaveBackup}>Save</Button>}
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Create Role Modal */}
+      <Dialog open={createRoleModalOpen} onOpenChange={setCreateRoleModalOpen}>
+        <DialogContent className="sm:max-w-2xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Create New Role</DialogTitle>
+            <DialogDescription>
+              Define a new role with page access and permissions.
+            </DialogDescription>
+          </DialogHeader>
+
+          {roleFormErrors.length > 0 && (
+            <div role="alert" className="text-sm text-destructive space-y-1">
+              {roleFormErrors.map((err, i) => (
+                <p key={i}>{err}</p>
+              ))}
+            </div>
+          )}
+
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="role-name">Role Name</Label>
+              <Input
+                id="role-name"
+                value={roleForm.name}
+                onChange={(e) =>
+                  setRoleForm((p) => ({ ...p, name: e.target.value }))
+                }
+                placeholder="Enter role name..."
+              />
+            </div>
+            <div>
+              <Label htmlFor="role-description">Description</Label>
+              <Input
+                id="role-description"
+                value={roleForm.description}
+                onChange={(e) =>
+                  setRoleForm((p) => ({ ...p, description: e.target.value }))
+                }
+                placeholder="Enter description..."
+              />
+            </div>
+            <div>
+              <Label>Page Access</Label>
+              <div className="space-y-2 mt-2">
+                {AVAILABLE_PAGES.map((page) => (
+                  <div key={page.path} className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      id={`create-page-${page.path}`}
+                      checked={roleForm.allowedPages.includes(page.path)}
+                      onChange={() => toggleRoleFormPage(page.path)}
+                      className="h-4 w-4 rounded border border-input"
+                    />
+                    <Label htmlFor={`create-page-${page.path}`}>
+                      {page.label} ({page.path})
+                    </Label>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div>
+              <Label>Action Permissions</Label>
+              <div className="space-y-2 mt-2">
+                {allPermissions.map((perm) => (
+                  <div key={perm.id} className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      id={`create-perm-${perm.id}`}
+                      checked={roleForm.permissionIds.includes(perm.id)}
+                      onChange={() => toggleRoleFormPermission(perm.id)}
+                      className="h-4 w-4 rounded border border-input"
+                    />
+                    <Label htmlFor={`create-perm-${perm.id}`}>
+                      {perm.name}
+                    </Label>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setCreateRoleModalOpen(false)}
+            >
+              Cancel
+            </Button>
+            <Button onClick={handleSaveNewRole}>Create Role</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Role Modal */}
+      <Dialog open={editRoleModalOpen} onOpenChange={setEditRoleModalOpen}>
+        <DialogContent className="sm:max-w-2xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>
+              Edit Role: {selectedRole ? formatRoleName(selectedRole.name) : ''}
+            </DialogTitle>
+            <DialogDescription>
+              Update page access and permissions for this role.
+            </DialogDescription>
+          </DialogHeader>
+
+          {roleFormErrors.length > 0 && (
+            <div role="alert" className="text-sm text-destructive space-y-1">
+              {roleFormErrors.map((err, i) => (
+                <p key={i}>{err}</p>
+              ))}
+            </div>
+          )}
+
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="edit-role-description">Description</Label>
+              <Input
+                id="edit-role-description"
+                value={roleForm.description}
+                onChange={(e) =>
+                  setRoleForm((p) => ({ ...p, description: e.target.value }))
+                }
+                placeholder="Enter description..."
+              />
+            </div>
+            <div>
+              <Label>Page Access</Label>
+              <div className="space-y-2 mt-2">
+                {AVAILABLE_PAGES.map((page) => (
+                  <div key={page.path} className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      id={`edit-page-${page.path}`}
+                      checked={roleForm.allowedPages.includes(page.path)}
+                      onChange={() => toggleRoleFormPage(page.path)}
+                      className="h-4 w-4 rounded border border-input"
+                    />
+                    <Label htmlFor={`edit-page-${page.path}`}>
+                      {page.label} ({page.path})
+                    </Label>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div>
+              <Label>Action Permissions</Label>
+              <div className="space-y-2 mt-2">
+                {allPermissions.map((perm) => (
+                  <div key={perm.id} className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      id={`edit-perm-${perm.id}`}
+                      checked={roleForm.permissionIds.includes(perm.id)}
+                      onChange={() => toggleRoleFormPermission(perm.id)}
+                      className="h-4 w-4 rounded border border-input"
+                    />
+                    <Label htmlFor={`edit-perm-${perm.id}`}>{perm.name}</Label>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setEditRoleModalOpen(false)}
+            >
+              Cancel
+            </Button>
+            <Button onClick={handleSaveEditRole}>Save Changes</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

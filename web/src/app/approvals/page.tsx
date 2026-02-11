@@ -1,18 +1,16 @@
 /**
- * Approvals Page
+ * Approvals Index Page
  *
- * Requires ApproverL1, ApproverL2, or ApproverL3 role.
+ * Redirects to the appropriate approval level page based on user's role.
+ * Each approval level has its own dedicated page:
+ * - /approvals/level-1 (ApproverL1)
+ * - /approvals/level-2 (ApproverL2)
+ * - /approvals/level-3 (ApproverL3)
  */
 
 import { redirect } from 'next/navigation';
 import { getSession } from '@/lib/auth/auth-server';
 import { UserRole } from '@/types/roles';
-
-const APPROVER_ROLES = [
-  UserRole.ApproverL1,
-  UserRole.ApproverL2,
-  UserRole.ApproverL3,
-];
 
 export default async function ApprovalsPage() {
   const user = await getSession();
@@ -21,22 +19,17 @@ export default async function ApprovalsPage() {
     redirect('/login');
   }
 
-  const hasApproverRole = user.roles.some((role) =>
-    APPROVER_ROLES.includes(role as UserRole),
-  );
-
-  if (!hasApproverRole) {
-    redirect('/auth/forbidden');
+  // Redirect to the appropriate approval level based on role
+  if ((user.roles as string[]).includes(UserRole.ApproverL1)) {
+    redirect('/approvals/level-1');
+  }
+  if ((user.roles as string[]).includes(UserRole.ApproverL2)) {
+    redirect('/approvals/level-2');
+  }
+  if ((user.roles as string[]).includes(UserRole.ApproverL3)) {
+    redirect('/approvals/level-3');
   }
 
-  return (
-    <main className="container mx-auto px-4 py-8">
-      <div>
-        <h1 className="text-2xl font-bold">Approvals</h1>
-        <p className="text-muted-foreground mt-2">
-          Review and approve pending submissions.
-        </p>
-      </div>
-    </main>
-  );
+  // User has no approver role
+  redirect('/auth/forbidden');
 }

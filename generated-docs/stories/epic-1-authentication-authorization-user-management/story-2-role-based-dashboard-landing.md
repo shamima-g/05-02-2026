@@ -21,14 +21,11 @@
 - [ ] Given I am on the home page (Dashboard), when the page loads, then I see an "Active Batches" panel showing batches I have access to
 - [ ] Given I am on the home page (Dashboard), when the page loads, then I see a "Recent Activity" panel showing system activity relevant to my role
 
-### Role-Specific Content - Operations Lead
-- [ ] Given I have the Operations Lead role, when I view the home page (Dashboard), then my Pending Actions include file status alerts, validation summaries, and workflow progression tasks
-- [ ] Given I have the Operations Lead role, when I view the home page (Dashboard), then I see "Data Quality Alerts" panel with validation warning counts
-- [ ] Given I have the Operations Lead role, when I view the home page (Dashboard), then I can see all active batches in Data Preparation or Approval states
-
 ### Role-Specific Content - Analyst
-- [ ] Given I have the Analyst role, when I view the home page (Dashboard), then my Pending Actions focus on outstanding master data items requiring maintenance
+- [ ] Given I have the Analyst role, when I view the home page (Dashboard), then my Pending Actions include file status alerts, validation summaries, outstanding master data items requiring maintenance, and workflow progression tasks
+- [ ] Given I have the Analyst role, when I view the home page (Dashboard), then I see "Data Quality Alerts" panel with validation warning counts
 - [ ] Given I have the Analyst role, when I view the home page (Dashboard), then I see specific counts of missing data (e.g., "5 Instruments Missing Duration Values")
+- [ ] Given I have the Analyst role, when I view the home page (Dashboard), then I can see all active batches in Data Preparation or Approval states
 
 ### Role-Specific Content - Approver (Any Level)
 - [ ] Given I have an Approver role (L1, L2, or L3), when I view the home page (Dashboard), then my Pending Actions show only batches awaiting my approval level

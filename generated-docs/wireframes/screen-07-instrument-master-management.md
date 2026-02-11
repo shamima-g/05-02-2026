@@ -174,7 +174,7 @@ When clicking [History] or viewing Audit History tab:
 |  After: "Technology"                                                   |
 |  Reason: "Standardizing sector classifications"                        |
 |                                                                        |
-|  2025-11-12 09:45 - John Smith (Operations Lead)                       |
+|  2025-11-12 09:45 - John Smith (Analyst)                       |
 |  Field Changed: Exchange                                               |
 |  Before: [empty]                                                       |
 |  After: "NASDAQ"                                                       |

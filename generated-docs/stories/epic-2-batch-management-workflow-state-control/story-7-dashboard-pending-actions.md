@@ -14,9 +14,9 @@
 
 ## Acceptance Criteria
 
-### Happy Path - Operations Lead Pending Actions
-- [ ] Given I am an Operations Lead and January 2026 batch has 5 missing instrument durations, when I view the dashboard, then I see pending action "[ ! ] 5 Instruments Missing Duration Values [Fix >]" with priority indicator
-- [ ] Given I am an Operations Lead and a batch is ready for confirmation, when I view the dashboard, then I see pending action "[ ! ] Batch Jan 2026 - Ready for Data Confirmation [Confirm >]"
+### Happy Path - Analyst Pending Actions
+- [ ] Given I am an Analyst and January 2026 batch has 5 missing instrument durations, when I view the dashboard, then I see pending action "[ ! ] 5 Instruments Missing Duration Values [Fix >]" with priority indicator
+- [ ] Given I am an Analyst and a batch is ready for confirmation, when I view the dashboard, then I see pending action "[ ! ] Batch Jan 2026 - Ready for Data Confirmation [Confirm >]"
 - [ ] Given I click "[Fix >]" on a pending action, when the link is clicked, then I navigate to the Risk Metrics management page filtered to show missing duration values
 
 ### Happy Path - Approver Pending Actions
@@ -53,7 +53,7 @@
 - [ ] Given a pending action is a warning (validation warnings), when I view the pending actions panel, then I see a yellow "[ ⚠ ]" warning indicator
 
 ### Role-Based Filtering
-- [ ] Given I am a Read-Only user, when I view the dashboard, then I see "Active Batches" and "Workflow Status" widgets but NO "Pending Actions" panel (no actions available for read-only role)
+- [ ] Given I am a user whose role has no batch or approval permissions, when I view the dashboard, then I see "Active Batches" and "Workflow Status" widgets but NO "Pending Actions" panel (no actions available)
 - [ ] Given I am an Administrator, when I view the dashboard, then I see pending actions related to user management and system configuration (not workflow approvals)
 
 ### Real-Time Updates
@@ -62,7 +62,7 @@
 
 ### Empty States
 - [ ] Given I have no pending actions, when I view the dashboard, then I see "Pending Actions (0)" panel with message "No pending actions. Great job!"
-- [ ] Given there are no active batches, when I view the dashboard, then I see "Active Batches" widget with message "No active batches. Create a new batch to get started." and "[Create Batch]" button (Operations Lead only)
+- [ ] Given there are no active batches, when I view the dashboard, then I see "Active Batches" widget with message "No active batches. Create a new batch to get started." and "[Create Batch]" button (Analyst only)
 
 ### Count Badges
 - [ ] Given I have 3 pending actions, when I view the dashboard, then I see "PENDING ACTIONS (3)" header with count badge

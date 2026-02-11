@@ -7,6 +7,7 @@ import { AppHeader } from './AppHeader';
 interface UserInfo {
   displayName: string;
   roles: string[];
+  allowedPages: string[];
 }
 
 function decodeTokenPayload(token: string): UserInfo | null {
@@ -19,6 +20,7 @@ function decodeTokenPayload(token: string): UserInfo | null {
     return {
       displayName: payload.displayName || payload.username || 'User',
       roles: payload.roles || [],
+      allowedPages: payload.allowedPages || [],
     };
   } catch {
     return null;
@@ -51,6 +53,10 @@ export function AuthenticatedNav() {
   }
 
   return (
-    <AppHeader displayName={userInfo.displayName} roles={userInfo.roles} />
+    <AppHeader
+      displayName={userInfo.displayName}
+      roles={userInfo.roles}
+      allowedPages={userInfo.allowedPages}
+    />
   );
 }

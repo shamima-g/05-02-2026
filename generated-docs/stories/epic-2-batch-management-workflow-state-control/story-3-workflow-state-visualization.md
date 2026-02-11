@@ -38,7 +38,7 @@
 ### Navigation and Actions
 - [ ] Given I am on the workflow state viewer, when I click "View Batch Details", then I navigate to the batch details page
 - [ ] Given I am on the workflow state viewer, when I click a stage name in the progress bar (e.g., "L1 Approval"), then I see a tooltip showing "Level 1 Approval - Completed on 2026-01-06 11:30 by John Smith"
-- [ ] Given I am viewing a batch in Data Preparation, when I have Operations Lead role, then I see a "Confirm Data Ready" button at the bottom of the page
+- [ ] Given I am viewing a batch in Data Preparation, when I have Analyst role, then I see a "Confirm Data Ready" button at the bottom of the page
 
 ### Real-Time Updates
 - [ ] Given I am viewing the workflow state for a batch, when the batch workflow state changes (e.g., approved at L1), then the page updates automatically to show the new current stage within 5 seconds (via polling or WebSocket)

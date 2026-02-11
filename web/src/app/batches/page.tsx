@@ -1,12 +1,12 @@
 /**
  * Batches Page
  *
- * Requires OperationsLead role only (strict role-based access).
+ * Requires Analyst role (uses dynamic page access via allowedPages).
  */
 
 import { redirect } from 'next/navigation';
 import { getSession } from '@/lib/auth/auth-server';
-import { UserRole } from '@/types/roles';
+import { hasPageAccess } from '@/lib/auth/auth-helpers';
 
 export default async function BatchesPage() {
   const user = await getSession();
@@ -15,7 +15,7 @@ export default async function BatchesPage() {
     redirect('/login');
   }
 
-  if (!user.roles.includes(UserRole.OperationsLead)) {
+  if (!hasPageAccess(user, '/batches')) {
     redirect('/auth/forbidden');
   }
 
@@ -24,7 +24,7 @@ export default async function BatchesPage() {
       <div>
         <h1 className="text-2xl font-bold">Batches</h1>
         <p className="text-muted-foreground mt-2">
-          Manage instrument batches and submissions.
+          Manage reporting batches and submissions.
         </p>
       </div>
     </main>

@@ -15,8 +15,13 @@
  * </RoleGate>
  *
  * // Multiple allowed roles
- * <RoleGate allowedRoles={[UserRole.Administrator, UserRole.OperationsLead]}>
+ * <RoleGate allowedRoles={[UserRole.Administrator, UserRole.Analyst]}>
  *   <ManagementTools />
+ * </RoleGate>
+ *
+ * // Page-based access
+ * <RoleGate allowedPage="/approvals/level-1">
+ *   <ApprovalPanel />
  * </RoleGate>
  *
  * // With fallback content
@@ -40,7 +45,11 @@
  */
 
 import { getSession } from '@/lib/auth/auth-server';
-import { hasAnyRole, hasPermission } from '@/lib/auth/auth-helpers';
+import {
+  hasAnyRole,
+  hasPermission,
+  hasPageAccess,
+} from '@/lib/auth/auth-helpers';
 import { UserRole } from '@/types/roles';
 
 export type RoleGateProps = {
@@ -60,6 +69,12 @@ export type RoleGateProps = {
    * Takes precedence over allowedRoles if both are provided.
    */
   requiredPermission?: string;
+
+  /**
+   * Required page path (e.g., "/approvals/level-1").
+   * Checks against the user's allowedPages from their role(s).
+   */
+  allowedPage?: string;
 
   /**
    * If true, only requires authentication (no specific role).
@@ -87,6 +102,7 @@ export async function RoleGate({
   children,
   allowedRoles,
   requiredPermission,
+  allowedPage,
   requireAuth = false,
   fallback = null,
 }: RoleGateProps): Promise<React.ReactNode> {
@@ -97,12 +113,20 @@ export async function RoleGate({
     return fallback;
   }
 
-  // If only authentication is required (no specific role/permission)
-  if (requireAuth && !allowedRoles && !requiredPermission) {
+  // If only authentication is required (no specific role/permission/page)
+  if (requireAuth && !allowedRoles && !requiredPermission && !allowedPage) {
     return children;
   }
 
-  // Check permission requirement (takes precedence)
+  // Check page access requirement
+  if (allowedPage) {
+    if (hasPageAccess(user, allowedPage)) {
+      return children;
+    }
+    return fallback;
+  }
+
+  // Check permission requirement (takes precedence over roles)
   if (requiredPermission) {
     if (hasPermission(user, requiredPermission)) {
       return children;

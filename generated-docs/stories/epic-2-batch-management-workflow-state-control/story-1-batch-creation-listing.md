@@ -10,7 +10,7 @@
 | **Page Action** | `create_new` |
 
 ## User Story
-**As an** Operations Lead **I want** to create new reporting batches and view all batches with their workflow status **So that** I can manage multiple reporting periods simultaneously and track progress
+**As an** Analyst **I want** to create new reporting batches and view all batches with their workflow status **So that** I can manage multiple reporting periods simultaneously and track progress
 
 ## Acceptance Criteria
 
@@ -44,8 +44,8 @@
 - [ ] Given I see the "Load More" button, when I click it, then the next 10 batches are loaded and displayed
 
 ### Permission Control
-- [ ] Given I am an Operations Lead, when I view the Batch Management page, then I see the "Create New Batch" button
-- [ ] Given I am an Analyst (not Operations Lead), when I view the Batch Management page, then I do NOT see the "Create New Batch" button (view only)
+- [ ] Given I am an Analyst, when I view the Batch Management page, then I see the "Create New Batch" button
+- [ ] Given I am an Analyst (not Analyst), when I view the Batch Management page, then I do NOT see the "Create New Batch" button (view only)
 - [ ] Given I am an Approver, when I view the Batch Management page, then I can view batches but cannot create new ones
 
 ## API Endpoints (from OpenAPI spec)

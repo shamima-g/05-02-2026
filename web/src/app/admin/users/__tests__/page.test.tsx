@@ -69,6 +69,7 @@ const createMockAdminUser = (overrides: Partial<AuthUser> = {}): AuthUser => ({
     'update_users',
     'deactivate_users',
   ],
+  allowedPages: ['/admin/users', '/admin/roles', '/admin/audit-trail'],
   ...overrides,
 });
 
@@ -81,6 +82,7 @@ const createMockNonAdminUser = (
   email: 'analyst@investinsight.com',
   roles: ['Analyst'],
   permissions: ['view_portfolios'],
+  allowedPages: ['/dashboard', '/batches'],
   ...overrides,
 });
 
@@ -103,10 +105,11 @@ const createMockUserDetail = (
   deactivatedAt: null,
   roles: [
     {
-      id: 1,
-      name: 'OperationsLead',
-      description: 'Operations Lead Role',
+      id: 2,
+      name: 'Analyst',
+      description: 'Analyst Role',
       isSystemRole: true,
+      allowedPages: [],
     },
   ],
   lastLoginAt: '2026-02-09T08:30:00Z',
@@ -137,6 +140,7 @@ const createMockUserList = (users: UserDetail[] = []): UserList => ({
                 name: 'Analyst',
                 description: 'Analyst Role',
                 isSystemRole: true,
+                allowedPages: [],
               },
             ],
             lastLoginAt: '2026-02-08T14:20:00Z',
@@ -193,27 +197,38 @@ describe('User Administration Page', () => {
     (usersApi.listRoles as ReturnType<typeof vi.fn>).mockResolvedValue([
       {
         id: 1,
-        name: 'OperationsLead',
-        description: 'Operations Lead Role',
+        name: 'Administrator',
+        description: 'Administrator Role',
         isSystemRole: true,
+        allowedPages: [],
       },
       {
         id: 2,
         name: 'Analyst',
         description: 'Analyst Role',
         isSystemRole: true,
+        allowedPages: [],
       },
       {
         id: 3,
-        name: 'Administrator',
-        description: 'Administrator Role',
+        name: 'ApproverL1',
+        description: 'Level 1 Approver Role',
         isSystemRole: true,
+        allowedPages: [],
       },
       {
         id: 4,
-        name: 'Reviewer',
-        description: 'Reviewer Role',
-        isSystemRole: false,
+        name: 'ApproverL2',
+        description: 'Level 2 Approver Role',
+        isSystemRole: true,
+        allowedPages: [],
+      },
+      {
+        id: 5,
+        name: 'ApproverL3',
+        description: 'Level 3 Approver Role',
+        isSystemRole: true,
+        allowedPages: [],
       },
     ]);
   });
@@ -296,7 +311,7 @@ describe('User Administration Page', () => {
       await waitFor(() => {
         expect(screen.getByText('Operations')).toBeInTheDocument();
         expect(screen.getByText('jsmith')).toBeInTheDocument();
-        expect(screen.getByText('OperationsLead')).toBeInTheDocument();
+        expect(screen.getAllByText('Analyst').length).toBeGreaterThan(0);
       });
     });
   });
@@ -388,6 +403,7 @@ describe('User Administration Page', () => {
               name: 'Analyst',
               description: 'Analyst Role',
               isSystemRole: true,
+              allowedPages: [],
             },
           ],
         }),
@@ -543,10 +559,10 @@ describe('User Administration Page', () => {
       });
       await user.click(rolesTab);
 
-      const operationsLeadCheckbox = screen.getByRole('checkbox', {
-        name: /operations lead/i,
+      const analystCheckbox = screen.getByRole('checkbox', {
+        name: /analyst/i,
       });
-      await user.click(operationsLeadCheckbox);
+      await user.click(analystCheckbox);
 
       const createButton = screen.getByRole('button', { name: /create user/i });
       await user.click(createButton);
@@ -599,7 +615,7 @@ describe('User Administration Page', () => {
       });
       await user.click(rolesTab);
       const roleCheckbox = screen.getByRole('checkbox', {
-        name: /operations lead/i,
+        name: /analyst/i,
       });
       await user.click(roleCheckbox);
 
@@ -664,7 +680,7 @@ describe('User Administration Page', () => {
       });
       await user.click(rolesTab);
       const roleCheckbox = screen.getByRole('checkbox', {
-        name: /operations lead/i,
+        name: /analyst/i,
       });
       await user.click(roleCheckbox);
 
@@ -807,7 +823,7 @@ describe('User Administration Page', () => {
       });
       await user.click(rolesTab);
       const roleCheckbox = screen.getByRole('checkbox', {
-        name: /operations lead/i,
+        name: /analyst/i,
       });
       await user.click(roleCheckbox);
 
@@ -861,7 +877,7 @@ describe('User Administration Page', () => {
       });
       await user.click(rolesTab);
       const roleCheckbox = screen.getByRole('checkbox', {
-        name: /operations lead/i,
+        name: /analyst/i,
       });
       await user.click(roleCheckbox);
 
@@ -1020,10 +1036,11 @@ describe('User Administration Page', () => {
       (usersApi.updateUserRoles as ReturnType<typeof vi.fn>).mockResolvedValue([
         ...userToEdit.roles,
         {
-          id: 2,
-          name: 'Analyst',
-          description: 'Analyst Role',
+          id: 3,
+          name: 'ApproverL1',
+          description: 'Level 1 Approver Role',
           isSystemRole: true,
+          allowedPages: [],
         },
       ]);
 
@@ -1045,10 +1062,10 @@ describe('User Administration Page', () => {
       });
       await user.click(rolesTab);
 
-      const analystCheckbox = screen.getByRole('checkbox', {
-        name: /analyst/i,
+      const approverCheckbox = screen.getByRole('checkbox', {
+        name: /approver l1/i,
       });
-      await user.click(analystCheckbox);
+      await user.click(approverCheckbox);
 
       const saveButton = screen.getByRole('button', { name: /save changes/i });
       await user.click(saveButton);
@@ -1064,16 +1081,18 @@ describe('User Administration Page', () => {
       const userToEdit = createMockUserDetail({
         roles: [
           {
-            id: 1,
-            name: 'OperationsLead',
-            description: 'Operations Lead Role',
-            isSystemRole: true,
-          },
-          {
             id: 2,
             name: 'Analyst',
             description: 'Analyst Role',
             isSystemRole: true,
+            allowedPages: [],
+          },
+          {
+            id: 3,
+            name: 'ApproverL1',
+            description: 'Level 1 Approver Role',
+            isSystemRole: true,
+            allowedPages: [],
           },
         ],
       });
@@ -1109,10 +1128,10 @@ describe('User Administration Page', () => {
       });
       await user.click(rolesTab);
 
-      const analystCheckbox = screen.getByRole('checkbox', {
-        name: /analyst/i,
+      const approverCheckbox = screen.getByRole('checkbox', {
+        name: /approver l1/i,
       });
-      await user.click(analystCheckbox);
+      await user.click(approverCheckbox);
 
       const saveButton = screen.getByRole('button', { name: /save changes/i });
       await user.click(saveButton);
@@ -1121,7 +1140,7 @@ describe('User Administration Page', () => {
         expect(usersApi.updateUserRoles).toHaveBeenCalledWith(
           1,
           expect.objectContaining({
-            roleIds: expect.not.arrayContaining([2]),
+            roleIds: expect.not.arrayContaining([3]),
           }),
           'admin',
         );
@@ -1285,7 +1304,8 @@ describe('User Administration Page', () => {
 
       await waitFor(() => {
         const dialog = screen.getByRole('dialog');
-        expect(within(dialog).getByText(/OperationsLead/i)).toBeInTheDocument();
+        const analystElements = within(dialog).getAllByText(/Analyst/i);
+        expect(analystElements.length).toBeGreaterThan(0);
       });
     });
   });

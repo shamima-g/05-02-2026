@@ -1,12 +1,12 @@
 /**
  * Role Management API Functions
  *
- * API wrappers for role and permission management including viewing role details,
- * permissions, and user assignments.
+ * API wrappers for role and permission management including CRUD operations,
+ * viewing role details, permissions, and user assignments.
  * Uses the base API client for consistent error handling and request formatting.
  */
 
-import { get } from '@/lib/api/client';
+import { get, post, put } from '@/lib/api/client';
 import type { UserDetail } from '@/lib/api/users';
 
 /**
@@ -20,7 +20,7 @@ export interface Permission {
 }
 
 /**
- * Role with associated permissions
+ * Role with associated permissions and page access
  */
 export interface RoleWithPermissions {
   id: number;
@@ -28,6 +28,26 @@ export interface RoleWithPermissions {
   description: string | null;
   isSystemRole: boolean;
   permissions: Permission[];
+  allowedPages: string[];
+}
+
+/**
+ * Request to create a new role
+ */
+export interface CreateRoleRequest {
+  name: string;
+  description?: string;
+  permissionIds: number[];
+  allowedPages: string[];
+}
+
+/**
+ * Request to update an existing role
+ */
+export interface UpdateRoleRequest {
+  description?: string;
+  permissionIds: number[];
+  allowedPages: string[];
 }
 
 /**
@@ -49,6 +69,41 @@ export async function getRoleWithPermissions(
   roleId: number,
 ): Promise<RoleWithPermissions> {
   return get<RoleWithPermissions>(`/roles/${roleId}`);
+}
+
+/**
+ * Create a new role
+ *
+ * @param data - Role creation data
+ * @returns Created role with permissions
+ */
+export async function createRole(
+  data: CreateRoleRequest,
+): Promise<RoleWithPermissions> {
+  return post<RoleWithPermissions>('/roles', data);
+}
+
+/**
+ * Update an existing role
+ *
+ * @param roleId - Role ID
+ * @param data - Role update data
+ * @returns Updated role with permissions
+ */
+export async function updateRole(
+  roleId: number,
+  data: UpdateRoleRequest,
+): Promise<RoleWithPermissions> {
+  return put<RoleWithPermissions>(`/roles/${roleId}`, data);
+}
+
+/**
+ * List all available permissions
+ *
+ * @returns Array of permissions
+ */
+export async function listPermissions(): Promise<Permission[]> {
+  return get<Permission[]>('/permissions');
 }
 
 /**

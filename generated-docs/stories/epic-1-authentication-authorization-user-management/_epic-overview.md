@@ -2,7 +2,16 @@
 
 ## Description
 
-Foundation for all user access, roles, and permissions. Establishes who can do what in the system through external authentication integration, comprehensive user lifecycle management, role-based access control, and complete audit trails for security and compliance.
+Foundation for all user access, roles, and permissions. Establishes who can do what in the system through external authentication integration, comprehensive user lifecycle management, role-based access control with dynamic page access, and complete audit trails for security and compliance.
+
+### Role Model (5 Default Roles)
+- **Analyst** - All pages except Approval L1/L2/L3 and User Management
+- **Approver Level 1** - Approval Level 1 page only
+- **Approver Level 2** - Approval Level 2 page only
+- **Approver Level 3** - Approval Level 3 page only
+- **Administrator** - Users and Roles pages only
+
+Roles are API/database-driven. Administrators can create custom roles and edit existing roles' page access and action permissions. OperationsLead and ReadOnly roles have been removed.
 
 ## Stories
 

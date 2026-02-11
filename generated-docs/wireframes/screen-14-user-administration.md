@@ -28,14 +28,14 @@ User lifecycle management including creation, updates, deactivation, reactivatio
 |  +------------------------------------------------------------------------+  |
 |  | Name              | Email            | Roles          | Status | Act |  |
 |  +------------------------------------------------------------------------+  |
-|  | John Smith        | john.smith@...   | Operations Lead| ✓ Active    |  |
-|  | Dept: Operations  | Username: jsmith | Approver L1    | [Edit]      |  |
-|  | Last Login: 2026-01-05 14:23 | Created: 2025-01-15    | [View]      |  |
+|  | Sarah Johnson     | sarah.j@...      | Analyst        | ✓ Active    |  |
+|  | Dept: Operations  | Username: sjohnson|                | [Edit]      |  |
+|  | Last Login: 2026-01-05 16:45 | Created: 2025-02-10    | [View]      |  |
 |  |                                                        | [Deactivate]|  |
 |  +------------------------------------------------------------------------+  |
-|  | Sarah Johnson     | sarah.j@...      | Analyst        | ✓ Active    |  |
-|  | Dept: Operations  | Username: sjohnson| Read-Only     | [Edit]      |  |
-|  | Last Login: 2026-01-05 16:45 | Created: 2025-02-10    | [View]      |  |
+|  | John Smith        | john.smith@...   | Approver L1    | ✓ Active    |  |
+|  | Dept: Operations  | Username: jsmith |                | [Edit]      |  |
+|  | Last Login: 2026-01-05 14:23 | Created: 2025-01-15    | [View]      |  |
 |  |                                                        | [Deactivate]|  |
 |  +------------------------------------------------------------------------+  |
 |  | Michael Chen      | m.chen@...       | Approver L2    | ✓ Active    |  |
@@ -49,7 +49,7 @@ User lifecycle management including creation, updates, deactivation, reactivatio
 |  |                                                        | [Deactivate]|  |
 |  +------------------------------------------------------------------------+  |
 |  | David Brown       | d.brown@...      | Administrator  | ✓ Active    |  |
-|  | Dept: IT          | Username: dbrown | Read-Only      | [Edit]      |  |
+|  | Dept: IT          | Username: dbrown |                | [Edit]      |  |
 |  | Last Login: 2026-01-05 08:00 | Created: 2025-01-15    | [View]      |  |
 |  |                                                        | [Deactivate]|  |
 |  +------------------------------------------------------------------------+  |
@@ -87,7 +87,7 @@ ADD/EDIT USER MODAL:
 |  Department:             [Operations v]                                      |
 |                          (Operations, Portfolio Management, Executive, IT)   |
 |                                                                              |
-|  Job Title:              [Operations Lead...................]                |
+|  Job Title:              [Analyst.............................]                |
 |  Manager:                [David Brown v]  (Reporting manager)                |
 |                                                                              |
 |  CONTACT DETAILS (Tab)                                                       |
@@ -118,37 +118,31 @@ ADD/EDIT USER MODAL:
 |  +----------------------------------------------------------------------+    |
 |  | Select one or more roles for this user:                              |    |
 |  |                                                                      |    |
-|  | [✓] Operations Lead                                                  |    |
-|  |     • Full data entry capabilities during Data Preparation           |    |
-|  |     • File management and workflow orchestration                     |    |
-|  |     • Can confirm data ready for approval                            |    |
-|  |                                                                      |    |
-|  | [ ] Analyst                                                          |    |
+|  | [✓] Analyst                                                          |    |
 |  |     • Data correction and master data maintenance                    |    |
 |  |     • Commentary and documentation                                   |    |
-|  |     • No approval authority                                          |    |
+|  |     • Pages: All except Approval L1/L2/L3 and User Management       |    |
 |  |                                                                      |    |
-|  | [✓] Approver Level 1 (Operations)                                    |    |
+|  | [ ] Approver Level 1 (Operations)                                    |    |
 |  |     • Approve batches at operations level                            |    |
 |  |     • Focus: File completeness, data validation                      |    |
-|  |     • Read-only access during approval                               |    |
+|  |     • Pages: Approval Level 1 only                                   |    |
 |  |                                                                      |    |
 |  | [ ] Approver Level 2 (Portfolio Manager)                             |    |
 |  |     • Approve batches at portfolio manager level                     |    |
 |  |     • Focus: Holdings reasonableness, performance                    |    |
+|  |     • Pages: Approval Level 2 only                                   |    |
 |  |                                                                      |    |
 |  | [ ] Approver Level 3 (Executive)                                     |    |
 |  |     • Final approval before publication                              |    |
 |  |     • Focus: Overall report quality                                  |    |
+|  |     • Pages: Approval Level 3 only                                   |    |
 |  |                                                                      |    |
 |  | [ ] Administrator                                                    |    |
 |  |     • User management and system configuration                       |    |
-|  |     • Audit trail access                                             |    |
-|  |     • Reference data management                                      |    |
+|  |     • Pages: Users, Roles only                                       |    |
 |  |                                                                      |    |
-|  | [ ] Read-Only                                                        |    |
-|  |     • View access only, no modifications                             |    |
-|  |     • For reporting and analysis purposes                            |    |
+|  | (Custom roles also appear here if created by administrators)         |    |
 |  |                                                                      |    |
 |  | ⚠ Note: User cannot approve their own work (segregation of duties)  |    |
 |  +----------------------------------------------------------------------+    |
@@ -181,7 +175,7 @@ USER DETAIL VIEW:
 |  Employee ID:            EMP-12345                                           |
 |                                                                              |
 |  Department:             Operations                                          |
-|  Job Title:              Operations Lead                                     |
+|  Job Title:              Analyst                                             |
 |  Manager:                David Brown                                         |
 |                                                                              |
 |  ACCOUNT STATUS                                                              |
@@ -194,8 +188,7 @@ USER DETAIL VIEW:
 |                                                                              |
 |  ASSIGNED ROLES                                                              |
 |                                                                              |
-|  • Operations Lead (Assigned: 2025-01-15)                                    |
-|  • Approver Level 1 - Operations (Assigned: 2025-01-15)                      |
+|  • Analyst (Assigned: 2025-01-15)                                            |
 |                                                                              |
 |  ACTIVITY SUMMARY (Tab: Activity Log)                                        |
 |                                                                              |
@@ -218,21 +211,15 @@ USER DETAIL VIEW:
 |                                                                              |
 |  PERMISSIONS DETAIL (Tab: Permissions)                                       |
 |                                                                              |
-|  Operations Lead Role:                                                       |
-|  ✓ Create and manage batches                                                 |
-|  ✓ Upload and import files                                                   |
+|  Analyst Role:                                                               |
+|  Page Access: All except Approval L1/L2/L3 and User Management              |
+|  ✓ Data correction and master data maintenance                               |
 |  ✓ Modify master data during Data Preparation                                |
-|  ✓ Confirm data ready for approval                                           |
-|  ✓ View validation and calculation results                                   |
 |  ✓ Add commentary and documentation                                          |
+|  ✓ View validation and calculation results                                   |
+|  ✗ Cannot approve batches                                                    |
 |  ✗ Cannot modify data during approval phases                                 |
-|                                                                              |
-|  Approver Level 1 Role:                                                      |
-|  ✓ Approve batches at Level 1                                                |
-|  ✓ Reject batches with documented reason                                     |
-|  ✓ View all validation data                                                  |
-|  ✗ Cannot approve own work (segregation of duties)                           |
-|  ✗ Cannot modify data under review                                           |
+|  ✗ Cannot access User Management or Role Management                          |
 |                                                                              |
 +------------------------------------------------------------------------------+
 
@@ -244,7 +231,7 @@ DEACTIVATE USER MODAL:
 |  Are you sure you want to deactivate this user?                              |
 |                                                                              |
 |  User: John Smith (jsmith)                                                   |
-|  Roles: Operations Lead, Approver Level 1                                    |
+|  Roles: Approver Level 1                                                     |
 |  Last Login: 2026-01-05 14:23                                                |
 |                                                                              |
 |  ⚠ DEACTIVATION WILL:                                                        |

@@ -2,7 +2,7 @@
  * Integration Test: Auth Helpers & Permission-Based Access Control
  *
  * Tests our authorization helper functions that use the BRD
- * role/permission model (7 roles, 38 permissions).
+ * role/permission model (5 roles, 38 permissions).
  */
 
 import { describe, it, expect } from 'vitest';
@@ -24,6 +24,7 @@ function createMockUser(overrides?: Partial<AuthUser>): AuthUser {
     email: 'test@example.com',
     roles: [UserRole.Analyst],
     permissions: ['view_portfolios', 'edit_master_data', 'create_reports'],
+    allowedPages: [],
     ...overrides,
   };
 }
@@ -31,22 +32,20 @@ function createMockUser(overrides?: Partial<AuthUser>): AuthUser {
 describe('Role Utilities', () => {
   it('should validate role strings correctly', () => {
     expect(isValidRole('Administrator')).toBe(true);
-    expect(isValidRole('OperationsLead')).toBe(true);
     expect(isValidRole('Analyst')).toBe(true);
     expect(isValidRole('ApproverL1')).toBe(true);
+    expect(isValidRole('ApproverL2')).toBe(true);
     expect(isValidRole('invalid')).toBe(false);
     expect(isValidRole('admin')).toBe(false);
   });
 
-  it('should have all 7 BRD roles defined', () => {
-    expect(Object.values(UserRole)).toHaveLength(7);
-    expect(UserRole.OperationsLead).toBe('OperationsLead');
+  it('should have all 5 BRD roles defined', () => {
+    expect(Object.values(UserRole)).toHaveLength(5);
     expect(UserRole.Analyst).toBe('Analyst');
     expect(UserRole.ApproverL1).toBe('ApproverL1');
     expect(UserRole.ApproverL2).toBe('ApproverL2');
     expect(UserRole.ApproverL3).toBe('ApproverL3');
     expect(UserRole.Administrator).toBe('Administrator');
-    expect(UserRole.ReadOnly).toBe('ReadOnly');
   });
 });
 
@@ -63,9 +62,9 @@ describe('hasRole', () => {
 
   it('should handle users with multiple roles', () => {
     const user = createMockUser({
-      roles: [UserRole.OperationsLead, UserRole.ApproverL1],
+      roles: [UserRole.Analyst, UserRole.ApproverL1],
     });
-    expect(hasRole(user, UserRole.OperationsLead)).toBe(true);
+    expect(hasRole(user, UserRole.Analyst)).toBe(true);
     expect(hasRole(user, UserRole.ApproverL1)).toBe(true);
     expect(hasRole(user, UserRole.ApproverL2)).toBe(false);
   });
@@ -85,10 +84,10 @@ describe('hasAnyRole', () => {
   });
 
   it('should return false when user has none of the specified roles', () => {
-    const user = createMockUser({ roles: [UserRole.ReadOnly] });
-    expect(
-      hasAnyRole(user, [UserRole.Administrator, UserRole.OperationsLead]),
-    ).toBe(false);
+    const user = createMockUser({ roles: [UserRole.ApproverL1] });
+    expect(hasAnyRole(user, [UserRole.Administrator, UserRole.Analyst])).toBe(
+      false,
+    );
   });
 
   it('should return false for null or undefined user', () => {

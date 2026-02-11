@@ -27,6 +27,7 @@ function decodeJwtPayload(token: string): AuthUser | null {
       email: payload.email,
       roles: payload.roles,
       permissions: payload.permissions,
+      allowedPages: payload.allowedPages || [],
     };
   } catch {
     return null;

@@ -37,18 +37,24 @@
 - [ ] Given a user without 'batch.create' permission attempts to create a batch, when the API receives the request, then it returns HTTP 403 with message "Insufficient permissions: batch.create required"
 - [ ] Given a user with 'instrument.view' but not 'instrument.update' permission attempts to update an instrument, when the API receives the request, then it returns HTTP 403 with message "Insufficient permissions: instrument.update required"
 
-### Role-Based Page Access
-- [ ] Given a user without the Administrator role attempts to access `/admin/users`, when the page loads, then they see "Access denied. Administrator role required." and are redirected to the dashboard
-- [ ] Given a user without any approver role attempts to access `/approvals`, when the page loads, then they see "Access denied. Approver role required." and are redirected to the dashboard
-- [ ] Given a user with the Operations Lead role attempts to access `/batches`, when the page loads, then the page renders successfully (they have permission)
+### Dynamic Page Access (via Role allowedPages)
+- [ ] Given a user's role does not include `/admin/users` in its allowedPages, when the user attempts to access `/admin/users`, then they see "Access denied." and are redirected to `/auth/forbidden`
+- [ ] Given a user's role does not include `/approvals/level-1` in its allowedPages, when the user attempts to access `/approvals/level-1`, then they see "Access denied." and are redirected to `/auth/forbidden`
+- [ ] Given a user with the Analyst role attempts to access `/batches`, when the page loads, then the page renders successfully (Analyst allowedPages includes `/batches`)
+- [ ] Given a user with the Approver L1 role attempts to access `/approvals/level-1`, when the page loads, then the page renders successfully
+- [ ] Given a user with the Approver L1 role attempts to access `/approvals/level-2`, when the page loads, then they are redirected to `/auth/forbidden` (not in their allowedPages)
+- [ ] Given a user with the Administrator role attempts to access `/batches`, when the page loads, then they are redirected to `/auth/forbidden` (Administrator only has access to Users and Roles pages)
+- [ ] Given a user has multiple roles, when determining page access, then the allowed pages from all roles are combined (cumulative)
 
 ### Permission Checking Utility Functions
-- [ ] Given I call `hasPermission(user, 'instrument.create')` with a user who has Operations Lead role, then it returns `true`
-- [ ] Given I call `hasRole(user, 'Approver Level 2')`, when the user has that role assigned, then it returns `true`
-- [ ] Given I call `hasAnyRole(user, ['Operations Lead', 'Analyst'])`, when the user has at least one of those roles, then it returns `true`
+- [ ] Given I call `hasPermission(user, 'instrument.create')` with a user who has the Analyst role, then it returns `true`
+- [ ] Given I call `hasRole(user, 'ApproverL2')`, when the user has that role assigned, then it returns `true`
+- [ ] Given I call `hasAnyRole(user, ['Analyst', 'Administrator'])`, when the user has at least one of those roles, then it returns `true`
+- [ ] Given I call `hasPageAccess(user, '/approvals/level-1')`, when the user has Approver L1 role, then it returns `true`
+- [ ] Given I call `hasPageAccess(user, '/admin/users')`, when the user has only the Analyst role, then it returns `false`
 
 ### Multiple Role Permission Resolution
-- [ ] Given a user has both Operations Lead and Read-Only roles, when I check their permissions, then they have the combined (cumulative) permissions of both roles
+- [ ] Given a user has both Analyst and Approver L1 roles, when I check their page access, then they have the combined (cumulative) allowed pages of both roles
 - [ ] Given a user has roles with conflicting permissions, when I check their permissions, then the most permissive access is granted (cumulative model)
 
 ### State-Based Access Control (Per BR-GOV-005) — DEFERRED to Epic 2+

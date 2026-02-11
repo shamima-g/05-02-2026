@@ -28,7 +28,7 @@
 ### Create New User
 - [ ] Given I am on the User Administration screen, when I click "[+ Add New User]", then I see a modal with tabs: Basic Info, Roles & Permissions, Contact Details, Security
 - [ ] Given I am in the Add New User modal, when I fill in First Name "John", Last Name "Smith", Email "john.smith@company.com", Username "jsmith", Department "Operations" and click "[Create User]", then the user is created and appears in the user list
-- [ ] Given I am creating a new user, when I check "[✓] Operations Lead" role and click "[Create User]", then the user is created with the Operations Lead role assigned
+- [ ] Given I am creating a new user, when I check "[✓] Analyst" role and click "[Create User]", then the user is created with the Analyst role assigned
 - [ ] Given I am creating a new user, when I check "[✓] Force password change on first login" and click "[Create User]", then the user must change their password on first login
 - [ ] Given I am creating a new user, when I check "[✓] Send welcome email with login instructions" and click "[Create User]", then a welcome email is sent to the user's email address
 

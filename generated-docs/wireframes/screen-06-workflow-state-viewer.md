@@ -32,7 +32,7 @@ Visual representation of current workflow stage with complete history of state t
 |  +------------------------------------------------------------------------+  |
 |  |                                                                        |  |
 |  |  📍 2026-01-06 11:30 - LEVEL 1 APPROVED                                |  |
-|  |  ├─ User: John Smith (Operations Lead)                                 |  |
+|  |  ├─ User: John Smith (Analyst)                                 |  |
 |  |  ├─ Action: Approved for Level 2                                       |  |
 |  |  ├─ Comment: "All files received. 5 instruments missing ratings,       |  |
 |  |  │           documented and acceptable for this reporting period."     |  |
@@ -42,7 +42,7 @@ Visual representation of current workflow stage with complete history of state t
 |  |     • Notification sent to Portfolio Manager                           |  |
 |  |                                                                        |  |
 |  |  📍 2026-01-06 10:45 - DATA CONFIRMED READY                            |  |
-|  |  ├─ User: John Smith (Operations Lead)                                 |  |
+|  |  ├─ User: John Smith (Analyst)                                 |  |
 |  |  ├─ Action: Confirmed data ready for approval                          |  |
 |  |  └─ Automated Actions:                                                 |  |
 |  |     • Workflow transitioned to Level 1 Approval                        |  |
@@ -64,7 +64,7 @@ Visual representation of current workflow stage with complete history of state t
 |  |  └─ Result: 45/45 expected files received                              |  |
 |  |                                                                        |  |
 |  |  📍 2026-01-05 09:00 - BATCH CREATED                                   |  |
-|  |  ├─ User: John Smith (Operations Lead)                                 |  |
+|  |  ├─ User: John Smith (Analyst)                                 |  |
 |  |  ├─ Action: Created batch for January 2026 reporting                   |  |
 |  |  └─ Reporting Date: 2026-01-31                                         |  |
 |  |                                                                        |  |
@@ -125,7 +125,7 @@ Visual representation of current workflow stage with complete history of state t
    • Workflow transitioned to Data Preparation
    • All calculations cleared
    • Data entry capabilities unlocked
-   • Notification sent to Operations Lead
+   • Notification sent to Analyst
    • All subsequent approvals reset (Level 2, Level 3)
 ```
 
@@ -152,12 +152,12 @@ Visual representation of current workflow stage with complete history of state t
 Complete rejection cycle shown in timeline:
 ```
 📍 2026-01-10 15:45 - LEVEL 1 APPROVED (2nd Attempt)
-├─ User: John Smith (Operations Lead)
+├─ User: John Smith (Analyst)
 ├─ Action: Approved after corrections
 └─ Automated Actions: Transitioned to Level 2 Approval
 
 📍 2026-01-09 10:30 - DATA CONFIRMED READY (Resubmission)
-├─ User: John Smith (Operations Lead)
+├─ User: John Smith (Analyst)
 ├─ Action: Confirmed corrections complete, ready for approval
 └─ Automated Actions: Calculations re-executed, validation snapshot captured
 
@@ -172,5 +172,5 @@ Complete rejection cycle shown in timeline:
 └─ Automated Actions:
    • Calculations cleared
    • Data entry unlocked
-   • Notification sent to Operations Lead
+   • Notification sent to Analyst
 ```

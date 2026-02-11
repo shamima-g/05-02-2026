@@ -14,7 +14,7 @@ Complete wireframe set for an enterprise portfolio reporting and data stewardshi
 | 2 | Batch Management | Create/view batches, switch between reporting periods, access historical batches | `screen-02-batch-management.md` |
 | 3 | File Status Monitor | Track expected vs received files across all sources with real-time status | `screen-03-file-status-monitor.md` |
 | 4 | Data Validation Summary | Comprehensive completeness checks with drill-down and business judgment support | `screen-04-data-validation-summary.md` |
-| 5 | Approval Review Screen | Read-only approval view with mandatory rejection reason at all levels | `screen-05-approval-review.md` |
+| 5 | Approval Review Screens (3 pages) | Read-only approval view per level (/approvals/level-1, /level-2, /level-3) with mandatory rejection reason | `screen-05-approval-review.md` |
 | 6 | Workflow State Viewer | Visual workflow progress with complete state transition history | `screen-06-workflow-state-viewer.md` |
 | 7 | Instrument Master Management | CRUD operations for instrument definitions with search and audit history | `screen-07-instrument-master-management.md` |
 | 8 | Index Prices Management | Maintain index prices by period with bulk upload and history views | `screen-08-index-prices-management.md` |
@@ -136,12 +136,13 @@ File Status Monitor (Screen 3), Calculation Status Monitor (Screen 18), and Work
 All screens with [History] links connect to Audit Trail Viewer (Screen 16) filtered to relevant entity/user/date.
 
 ### 7. Role-Specific Behavior
-Dashboard (Screen 1) and navigation adapt based on user roles:
-- **Operations Lead**: Full data entry, file management, workflow orchestration
-- **Analyst**: Data correction, master data maintenance, commentary
-- **Approver (L1-L3)**: Read-only review with approve/reject at assigned level
-- **Administrator**: User management, configuration, audit access
-- **Read-Only**: View access only
+Dashboard (Screen 1) and navigation adapt based on user roles and their configured page access:
+- **Analyst**: All pages except Approval L1/L2/L3 and User Management - data correction, master data maintenance, commentary
+- **Approver L1**: Approval Level 1 page only - operations-level review with approve/reject
+- **Approver L2**: Approval Level 2 page only - portfolio manager review with approve/reject
+- **Approver L3**: Approval Level 3 page only - executive review with approve/reject
+- **Administrator**: Users and Roles pages only - user management, role configuration
+- **Custom Roles**: Administrators can create additional roles with custom page access and permissions
 
 ### 8. Validation Before Progression
 - File Status Monitor → Data Validation Summary → Calculation Status Monitor → Approval Review
@@ -202,7 +203,7 @@ Approvers see same validation data as operations team (BR-GOV-002). No hidden in
 11. **BR-MASTER-001 to 006**: Full CRUD for all master data entities (Screens 7-12)
 12. **BR-RULE-001**: Credit rating decision hierarchy with 6-source priority (Screen 11)
 13. **BR-AUD-001**: Complete audit trails with before/after values (Screen 16)
-14. **BR-SEC-002**: Role-based access control with 7 defined roles (Screens 14-15)
+14. **BR-SEC-002**: Role-based access control with 5 default roles + custom role creation (Screens 14-15)
 
 ## File Organization
 

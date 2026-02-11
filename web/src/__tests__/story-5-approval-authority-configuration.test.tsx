@@ -81,6 +81,7 @@ const createMockAdminUser = (overrides: Partial<AuthUser> = {}): AuthUser => ({
   email: 'admin@investinsight.com',
   roles: ['Administrator'],
   permissions: ['manage_users', 'view_users', 'manage_roles'],
+  allowedPages: ['/admin/users', '/admin/roles', '/admin/audit-trail'],
   ...overrides,
 });
 
@@ -93,24 +94,27 @@ const createMockNonAdminUser = (
   email: 'analyst@investinsight.com',
   roles: ['Analyst'],
   permissions: ['view_portfolios'],
+  allowedPages: ['/dashboard', '/batches'],
   ...overrides,
 });
 
 const createMockRole = (overrides: Partial<Role> = {}): Role => ({
-  id: 1,
-  name: 'OperationsLead',
-  description: 'Full data entry, file management, workflow orchestration',
+  id: 2,
+  name: 'Analyst',
+  description: 'Data correction, master data maintenance, commentary',
   isSystemRole: true,
+  allowedPages: ['/dashboard', '/batches'],
   ...overrides,
 });
 
 const createMockRoleWithPermissions = (
   overrides: Partial<RoleWithPermissions> = {},
 ): RoleWithPermissions => ({
-  id: 1,
-  name: 'OperationsLead',
-  description: 'Full data entry, file management, workflow orchestration',
+  id: 2,
+  name: 'Analyst',
+  description: 'Data correction, master data maintenance, commentary',
   isSystemRole: true,
+  allowedPages: ['/dashboard', '/batches'],
   permissions: [],
   ...overrides,
 });
@@ -173,44 +177,39 @@ const createMockApprovalRules = (
   ...overrides,
 });
 
-// Helper to create all 7 system roles
+// Helper to create all 5 system roles
 const createAllSystemRoles = (): RoleWithPermissions[] => [
   createMockRoleWithPermissions({
     id: 1,
-    name: 'OperationsLead',
-    description: 'Full data entry, file management, workflow orchestration',
+    name: 'Administrator',
+    description: 'User management, system configuration, audit access',
+    allowedPages: ['/admin', '/dashboard', '/batches', '/approvals'],
   }),
   createMockRoleWithPermissions({
     id: 2,
     name: 'Analyst',
     description: 'Data correction, master data maintenance, commentary',
+    allowedPages: ['/dashboard', '/batches'],
   }),
   createMockRoleWithPermissions({
     id: 3,
     name: 'ApproverL1',
     description:
       'Approve batches at operations level (file completeness, validation)',
+    allowedPages: ['/approvals', '/dashboard'],
   }),
   createMockRoleWithPermissions({
     id: 4,
     name: 'ApproverL2',
     description:
       'Approve batches at PM level (holdings reasonableness, performance)',
+    allowedPages: ['/approvals', '/dashboard'],
   }),
   createMockRoleWithPermissions({
     id: 5,
     name: 'ApproverL3',
     description: 'Final approval before publication (overall report quality)',
-  }),
-  createMockRoleWithPermissions({
-    id: 6,
-    name: 'Administrator',
-    description: 'User management, system configuration, audit access',
-  }),
-  createMockRoleWithPermissions({
-    id: 7,
-    name: 'ReadOnly',
-    description: 'View access only, no modifications',
+    allowedPages: ['/approvals', '/dashboard'],
   }),
 ];
 

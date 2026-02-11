@@ -10,12 +10,12 @@
 | **Page Action** | `create_new` |
 
 ## User Story
-**As an** Operations Lead **I want** to confirm that data preparation is complete and initiate calculations **So that** the workflow can progress to the approval stages and prevent further data modifications
+**As an** Analyst **I want** to confirm that data preparation is complete and initiate calculations **So that** the workflow can progress to the approval stages and prevent further data modifications
 
 ## Acceptance Criteria
 
 ### Happy Path - Confirm Data Preparation
-- [ ] Given I am an Operations Lead viewing a batch in "Data Preparation" status, when I click "Confirm Data Ready" button, then a confirmation dialog opens with message "This will lock all data entry and initiate calculations. Continue?"
+- [ ] Given I am an Analyst viewing a batch in "Data Preparation" status, when I click "Confirm Data Ready" button, then a confirmation dialog opens with message "This will lock all data entry and initiate calculations. Continue?"
 - [ ] Given the confirmation dialog is open, when I click "Confirm", then the batch status transitions from "DataPreparation" to "Level1Pending" and I see success message "Data confirmed. Calculations initiated. Batch transitioned to Level 1 Approval."
 - [ ] Given I confirmed data ready, when I check the workflow progress bar, then it shows "[Data Prep ✓] → [L1 Approval ●] → [L2] → [L3] → [Publish]" with Data Prep marked complete and L1 as current stage
 - [ ] Given data is confirmed, when I attempt to upload a file or modify master data, then the action is blocked with message "Batch is locked for approval. Cannot modify data."
@@ -31,8 +31,8 @@
 - [ ] Given I confirm data ready, when the Level 1 Approver logs in, then they see a notification "Batch January 2026 ready for Level 1 approval"
 
 ### Button Visibility and State
-- [ ] Given I am an Operations Lead viewing a batch in "Data Preparation", when the page loads, then I see the "Confirm Data Ready" button enabled
-- [ ] Given I am an Analyst (not Operations Lead), when I view a batch in "Data Preparation", then I do NOT see the "Confirm Data Ready" button (no permission)
+- [ ] Given I am an Analyst viewing a batch in "Data Preparation", when the page loads, then I see the "Confirm Data Ready" button enabled
+- [ ] Given I am an Analyst (not Analyst), when I view a batch in "Data Preparation", then I do NOT see the "Confirm Data Ready" button (no permission)
 - [ ] Given a batch is already in "Level1Pending" or later stages, when I view the batch, then I do NOT see the "Confirm Data Ready" button (already confirmed)
 - [ ] Given I click "Confirm Data Ready", when the API call is in progress, then the button shows a loading spinner and text changes to "Confirming..." and is disabled
 
@@ -60,7 +60,7 @@
 ## Implementation Notes
 
 - **Component**: `components/batches/ConfirmDataButton.tsx` - Reusable button component with confirmation dialog
-- **Permission Check**: Verify user has role "Operations Lead" before showing button (use role context from Epic 1)
+- **Permission Check**: Verify user has role "Analyst" before showing button (use role context from Epic 1)
 - **Validation Check**: Before showing confirmation dialog, fetch validation summary from `/v1/report-batches/{id}/validation`
 - **Confirmation Dialog**: Use Shadcn `AlertDialog` component with destructive action styling
 - **Optimistic Updates**: After confirmation, immediately update local batch state to "Level1Pending" while API call is in flight
@@ -81,7 +81,7 @@
 - Story 2 (Batch Context Switching) - uses active batch context
 - Story 3 (Workflow State Visualization) - updates workflow progress bar
 - Story 5 (State-Based Access Control) - triggers data lock
-- Epic 1 Story 4 (Role Assignment) - requires Operations Lead role check
+- Epic 1 Story 4 (Role Assignment) - requires Analyst role check
 
 ## Story Points
 **5** - Involves confirmation dialog, validation checks, state transitions, permission enforcement, and automated action triggers

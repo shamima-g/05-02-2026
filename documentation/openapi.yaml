@@ -2000,8 +2000,7 @@ paths:
       description: |
         Returns role-specific pending actions requiring the current user's attention.
         The backend filters actions based on the authenticated user's roles:
-        - **OperationsLead**: File status alerts, validation summaries, workflow progression tasks
-        - **Analyst**: Outstanding master data items requiring maintenance (missing durations, betas, etc.)
+        - **Analyst**: File status alerts, validation summaries, workflow progression tasks, outstanding master data items
         - **ApproverL1/L2/L3**: Batches awaiting the user's specific approval level only
         - **Administrator**: User management alerts and system configuration notifications
       operationId: getPendingActions
@@ -2573,7 +2572,7 @@ components:
           type: array
           items:
             type: string
-            enum: [OperationsLead, Analyst, ApproverL1, ApproverL2, ApproverL3, Administrator, ReadOnly]
+            enum: [Analyst, ApproverL1, ApproverL2, ApproverL3, Administrator]
         permissions:
           type: array
           items:
@@ -2617,7 +2616,7 @@ components:
           type: array
           items:
             type: string
-            enum: [OperationsLead, Analyst, ApproverL1, ApproverL2, ApproverL3, Administrator, ReadOnly]
+            enum: [Analyst, ApproverL1, ApproverL2, ApproverL3, Administrator]
         permissions:
           type: array
           items:
@@ -2842,6 +2841,11 @@ components:
           nullable: true
         isSystemRole:
           type: boolean
+        allowedPages:
+          type: array
+          items:
+            type: string
+          description: List of frontend route paths this role can access (e.g. ["/batches", "/approvals/level-1"])
 
     RoleWithPermissions:
       allOf:
@@ -2880,7 +2884,12 @@ components:
           type: array
           items:
             type: integer
-      required: [name, permissionIds]
+        allowedPages:
+          type: array
+          items:
+            type: string
+          description: Frontend route paths this role can access
+      required: [name, permissionIds, allowedPages]
 
     UpdateRoleRequest:
       type: object
@@ -2892,7 +2901,12 @@ components:
           type: array
           items:
             type: integer
-      required: [permissionIds]
+        allowedPages:
+          type: array
+          items:
+            type: string
+          description: Frontend route paths this role can access
+      required: [permissionIds, allowedPages]
 
     # ============================================
     # Approval Authority
@@ -4107,8 +4121,8 @@ components:
           enum: [file_alert, validation, approval, master_data, admin]
           description: |
             Category of pending action:
-            - file_alert: File upload/processing status (OperationsLead)
-            - validation: Data validation issues (OperationsLead)
+            - file_alert: File upload/processing status (Analyst)
+            - validation: Data validation issues (Analyst)
             - approval: Batches awaiting approval (ApproverL1/L2/L3)
             - master_data: Master data maintenance items (Analyst)
             - admin: User management and system config (Administrator)

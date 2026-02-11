@@ -7,6 +7,7 @@ export interface AuthUser {
   email: string;
   roles: UserRole[];
   permissions: string[];
+  allowedPages: string[];
 }
 
 export interface AuthState {

@@ -65,6 +65,7 @@ const createMockAdminUser = (overrides: Partial<AuthUser> = {}): AuthUser => ({
   email: 'admin@investinsight.com',
   roles: ['Administrator'],
   permissions: ['manage_users', 'view_audit_logs', 'view_login_activity'],
+  allowedPages: ['/admin/users', '/admin/roles', '/admin/audit-trail'],
   ...overrides,
 });
 
@@ -77,6 +78,7 @@ const createMockNonAdminUser = (
   email: 'analyst@investinsight.com',
   roles: ['Analyst'],
   permissions: ['view_portfolios'],
+  allowedPages: ['/dashboard', '/batches'],
   ...overrides,
 });
 

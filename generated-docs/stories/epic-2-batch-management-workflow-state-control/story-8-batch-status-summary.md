@@ -59,7 +59,7 @@
 - [ ] Given the batch is in approval stage, when I view key metrics, then I see "Data Locked Since: 2026-01-06 11:30" with lock icon
 
 ### Action Buttons Based on Status and Role
-- [ ] Given I am an Operations Lead and the batch is in Data Preparation with complete data, when I view the batch summary, then I see "[Confirm Data Ready]" button prominently displayed
+- [ ] Given I am an Analyst and the batch is in Data Preparation with complete data, when I view the batch summary, then I see "[Confirm Data Ready]" button prominently displayed
 - [ ] Given I am a Level 1 Approver and the batch is in Level1Pending, when I view the batch summary, then I see "[Review & Approve]" button
 - [ ] Given I am an Analyst and the batch is locked, when I view the batch summary, then I do NOT see action buttons (read-only view)
 - [ ] Given the batch is historical (Approved), when I view the batch summary, then I see "[Export Report]" and "[View Audit Log]" buttons only

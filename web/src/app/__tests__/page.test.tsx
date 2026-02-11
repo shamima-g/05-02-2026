@@ -54,21 +54,22 @@ const createMockUser = (overrides: Partial<AuthUser> = {}): AuthUser => ({
   username: 'sthomas',
   displayName: 'Sarah Thomas',
   email: 'sthomas@investinsight.com',
-  roles: ['OperationsLead'],
+  roles: ['Analyst'],
   permissions: [
     'view_batch_list',
     'create_batch',
     'upload_files',
     'view_file_status',
   ],
+  allowedPages: [],
   ...overrides,
 });
 
 // Mock pending actions factory
 const createMockPendingActions = (
-  role: string = 'OperationsLead',
+  role: string = 'Analyst',
 ): PendingAction[] => {
-  const operationsLeadActions: PendingAction[] = [
+  const analystActions: PendingAction[] = [
     {
       id: 'pa-1',
       type: 'file_alert',
@@ -95,7 +96,7 @@ const createMockPendingActions = (
     },
   ];
 
-  const analystActions: PendingAction[] = [
+  const masterDataActions: PendingAction[] = [
     {
       id: 'pa-4',
       type: 'master_data',
@@ -147,12 +148,14 @@ const createMockPendingActions = (
   switch (role) {
     case 'Analyst':
       return analystActions;
+    case 'MasterData':
+      return masterDataActions;
     case 'ApproverL2':
       return approverL2Actions;
     case 'Administrator':
       return adminActions;
     default:
-      return operationsLeadActions;
+      return analystActions;
   }
 };
 
@@ -239,7 +242,7 @@ describe('Dashboard Page', () => {
       );
       (
         dashboardApi.getPendingActions as ReturnType<typeof vi.fn>
-      ).mockResolvedValue(createMockPendingActions('OperationsLead'));
+      ).mockResolvedValue(createMockPendingActions('Analyst'));
       (
         dashboardApi.getActiveBatches as ReturnType<typeof vi.fn>
       ).mockResolvedValue(createMockActiveBatches());
@@ -254,7 +257,7 @@ describe('Dashboard Page', () => {
 
       await waitFor(() => {
         expect(
-          screen.getByText('Welcome, Sarah Thomas - OperationsLead'),
+          screen.getByText('Welcome, Sarah Thomas - Analyst'),
         ).toBeInTheDocument();
       });
     });
@@ -301,7 +304,7 @@ describe('Dashboard Page', () => {
       );
       (
         dashboardApi.getPendingActions as ReturnType<typeof vi.fn>
-      ).mockResolvedValue(createMockPendingActions('OperationsLead'));
+      ).mockResolvedValue(createMockPendingActions('Analyst'));
       (
         dashboardApi.getActiveBatches as ReturnType<typeof vi.fn>
       ).mockResolvedValue(createMockActiveBatches());
@@ -393,15 +396,15 @@ describe('Dashboard Page', () => {
     });
   });
 
-  describe('Role-Specific Content - Operations Lead', () => {
+  describe('Role-Specific Content - Analyst', () => {
     it('shows file alerts and validation summaries in Pending Actions', async () => {
-      const mockUser = createMockUser({ roles: ['OperationsLead'] });
+      const mockUser = createMockUser({ roles: ['Analyst'] });
       (authApi.getCurrentUser as ReturnType<typeof vi.fn>).mockResolvedValue(
         mockUser,
       );
       (
         dashboardApi.getPendingActions as ReturnType<typeof vi.fn>
-      ).mockResolvedValue(createMockPendingActions('OperationsLead'));
+      ).mockResolvedValue(createMockPendingActions('Analyst'));
       (
         dashboardApi.getActiveBatches as ReturnType<typeof vi.fn>
       ).mockResolvedValue(createMockActiveBatches());
@@ -428,7 +431,7 @@ describe('Dashboard Page', () => {
     });
 
     it('displays Data Quality Alerts panel with validation warning counts', async () => {
-      const mockUser = createMockUser({ roles: ['OperationsLead'] });
+      const mockUser = createMockUser({ roles: ['Analyst'] });
       (authApi.getCurrentUser as ReturnType<typeof vi.fn>).mockResolvedValue(
         mockUser,
       );
@@ -459,7 +462,7 @@ describe('Dashboard Page', () => {
     });
 
     it('shows batches in DataPreparation or approval states', async () => {
-      const mockUser = createMockUser({ roles: ['OperationsLead'] });
+      const mockUser = createMockUser({ roles: ['Analyst'] });
       (authApi.getCurrentUser as ReturnType<typeof vi.fn>).mockResolvedValue(
         mockUser,
       );
@@ -486,7 +489,7 @@ describe('Dashboard Page', () => {
     });
   });
 
-  describe('Role-Specific Content - Analyst', () => {
+  describe('Role-Specific Content - Master Data', () => {
     it('shows master data maintenance tasks in Pending Actions', async () => {
       const mockUser = createMockUser({
         roles: ['Analyst'],
@@ -497,7 +500,7 @@ describe('Dashboard Page', () => {
       );
       (
         dashboardApi.getPendingActions as ReturnType<typeof vi.fn>
-      ).mockResolvedValue(createMockPendingActions('Analyst'));
+      ).mockResolvedValue(createMockPendingActions('MasterData'));
       (
         dashboardApi.getActiveBatches as ReturnType<typeof vi.fn>
       ).mockResolvedValue(createMockActiveBatches());
@@ -667,7 +670,7 @@ describe('Dashboard Page', () => {
       );
       (
         dashboardApi.getPendingActions as ReturnType<typeof vi.fn>
-      ).mockResolvedValue(createMockPendingActions('Analyst'));
+      ).mockResolvedValue(createMockPendingActions('MasterData'));
       (
         dashboardApi.getActiveBatches as ReturnType<typeof vi.fn>
       ).mockResolvedValue(createMockActiveBatches());
@@ -830,7 +833,7 @@ describe('Dashboard Page', () => {
       );
       (
         dashboardApi.getPendingActions as ReturnType<typeof vi.fn>
-      ).mockResolvedValue(createMockPendingActions('OperationsLead'));
+      ).mockResolvedValue(createMockPendingActions('Analyst'));
       (
         dashboardApi.getActiveBatches as ReturnType<typeof vi.fn>
       ).mockResolvedValue(createMockActiveBatches());
@@ -1027,7 +1030,7 @@ describe('Dashboard Page', () => {
       );
       (
         dashboardApi.getPendingActions as ReturnType<typeof vi.fn>
-      ).mockResolvedValue(createMockPendingActions('OperationsLead'));
+      ).mockResolvedValue(createMockPendingActions('Analyst'));
       (
         dashboardApi.getActiveBatches as ReturnType<typeof vi.fn>
       ).mockResolvedValue(createMockActiveBatches());
