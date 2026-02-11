@@ -26,7 +26,6 @@ import type {
 } from '@/lib/api/dashboard';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { AppHeader } from '@/components/layout/AppHeader';
 import { WorkflowProgress } from '@/components/dashboard/WorkflowProgress';
 
 const MONTHS = [
@@ -197,7 +196,6 @@ export default function HomePage() {
 
   return (
     <>
-      {user && <AppHeader displayName={user.displayName} roles={user.roles} />}
       <main className="container mx-auto px-4 py-8">
         <header className="mb-8">
           {user && (

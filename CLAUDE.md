@@ -50,6 +50,11 @@ npm run test:quality # Validate test quality (must pass)
 /quality-check  # Validate all 5 quality gates before PR
 ```
 
+For uninterrupted workflow execution:
+```bash
+claude --dangerously-skip-permissions /continue
+```
+
 ## Critical Rules
 
 ### 1. Session Log Safety

@@ -1,117 +1,142 @@
 {
   "epic": 1,
-  "story": 2,
-  "storyTitle": "Role-Based Dashboard Landing",
-  "reviewDate": "2026-02-09T06:52:00Z",
-  "reviewer": "code-reviewer (Claude Code)",
-  "overallAssessment": "PASS WITH NOTES",
+  "story": 8,
+  "reviewDate": "2026-02-11",
+  "reviewedFiles": [
+    "web/src/app/admin/users/login-activity/page.tsx",
+    "web/src/app/admin/users/login-activity/__tests__/page.test.tsx",
+    "web/src/lib/api/audit.ts"
+  ],
+  "criticalIssues": [],
+  "highPriorityIssues": [
+    {
+      "severity": "high",
+      "category": "code_quality",
+      "file": "web/src/app/admin/users/login-activity/page.tsx",
+      "line": 100,
+      "issue": "Unused variable 'err' in catch block",
+      "description": "Lint warning: unused variable. While not critical, should be fixed for consistency.",
+      "suggestedFix": "Replace 'err' with '_' to indicate intentionally unused: catch (_) { ... }"
+    },
+    {
+      "severity": "high",
+      "category": "ui_ux",
+      "file": "web/src/app/admin/users/login-activity/page.tsx",
+      "lines": [269, 271],
+      "issue": "Dynamic Tailwind class names will not be compiled",
+      "description": "Lines 269 and 271 use template literals to construct Tailwind classes (border-${severity}-500, text-${severity}-700). Tailwind requires full class names to be present at build time for tree-shaking. These classes will not work.",
+      "suggestedFix": "Use a mapping object: const severityClasses = { critical: 'border-red-500 text-red-700', warning: 'border-yellow-500 text-yellow-700', info: 'border-blue-500 text-blue-700' }; then className={severityClasses[alert.severity]}"
+    }
+  ],
+  "suggestions": [
+    {
+      "category": "accessibility",
+      "file": "web/src/app/admin/users/login-activity/page.tsx",
+      "line": 242,
+      "suggestion": "Loading spinner should have accessible name",
+      "description": "The loading spinner has role='progressbar' but no aria-label. Consider adding aria-label='Loading login activity'",
+      "priority": "medium"
+    },
+    {
+      "category": "performance",
+      "file": "web/src/app/admin/users/login-activity/page.tsx",
+      "lines": [57, 76],
+      "suggestion": "Consider memoizing filter functions",
+      "description": "loadData and loadUsers callbacks are defined with useCallback but have statusFilter/searchQuery as dependencies. This is correct, but verify re-render behavior under filter changes.",
+      "priority": "low"
+    }
+  ],
   "automatedChecks": {
-    "build": "PASS",
-    "lint": "PASS",
-    "tests": "PASS (19/19 tests passing)",
-    "testQuality": "PASS",
-    "noErrorSuppressions": "PASS"
+    "typeScript": {
+      "passed": true,
+      "details": "npm run build completed successfully with no TypeScript errors"
+    },
+    "eslint": {
+      "passed": false,
+      "details": "1 error in AuthenticatedNav.tsx (not Story 8), 1 warning in Story 8 (unused variable 'err')",
+      "story8Specific": "1 warning: unused variable 'err' at line 100"
+    },
+    "tests": {
+      "passed": true,
+      "total": 312,
+      "story8Tests": 30,
+      "details": "All 312 tests pass including 30 new tests for Story 8"
+    },
+    "testQuality": {
+      "passed": true,
+      "details": "npm run test:quality passed with no violations"
+    },
+    "errorSuppressions": {
+      "passed": true,
+      "count": 0,
+      "details": "No error suppressions found in Story 8 implementation"
+    },
+    "apiSpec": {
+      "passed": true,
+      "details": "All API endpoints match OpenAPI spec (GET /audit/logins, /audit/logins/alerts, /audit/logins/export)"
+    }
   },
-  "issues": {
-    "critical": [],
-    "high": [
-      {
-        "id": "H1",
-        "title": "API Endpoints Not in OpenAPI Spec",
-        "description": "The implementation uses dashboard-specific endpoints that don't exist in the OpenAPI spec",
-        "details": [
-          "Story specifies: GET /v1/dashboard/pending-actions",
-          "Story specifies: GET /v1/batches?status=active",
-          "Story specifies: GET /v1/dashboard/activity",
-          "Story specifies: GET /v1/dashboard/data-quality-summary",
-          "Actual OpenAPI spec has: /report-batches (not /batches)",
-          "Actual OpenAPI spec has: NO /dashboard/* endpoints defined"
-        ],
-        "impact": "API calls will fail until backend implements these endpoints or story is updated to match spec",
-        "recommendation": "Clarify with user: Should backend implement these dashboard endpoints, or should we use existing spec endpoints?",
-        "severity": "HIGH",
-        "blocking": false
-      }
-    ],
-    "medium": [],
-    "suggestions": [
-      {
-        "id": "S1",
-        "title": "Consider Real-Time Updates Implementation",
-        "description": "Story acceptance criteria mention real-time updates (AC #13-14), but implementation doesn't include SSE or polling",
-        "recommendation": "Add polling mechanism (every 30s) or Server-Sent Events for live updates, or defer to future story",
-        "priority": "NICE_TO_HAVE"
-      },
-      {
-        "id": "S2",
-        "title": "Workflow Status Visualization Not Implemented",
-        "description": "Story AC #12-14 specify workflow status visualization (Data Prep → L1 → L2 → L3 → ✓), but this isn't in current implementation",
-        "recommendation": "Add WorkflowStatusPanel component showing visual progress indicators, or defer to future story",
-        "priority": "NICE_TO_HAVE"
-      },
-      {
-        "id": "S3",
-        "title": "Missing 'View Full Log' Navigation",
-        "description": "Story AC #11 specifies navigation to Audit Trail Viewer via '[View Full Log]' link, but this isn't present",
-        "recommendation": "Add link in Recent Activity panel footer, or mark as out of scope for this story",
-        "priority": "NICE_TO_HAVE"
-      }
-    ]
+  "codeQualityChecks": {
+    "reactPatterns": {
+      "passed": true,
+      "details": "Proper use of hooks, client component directive, effect dependencies"
+    },
+    "nextJsPatterns": {
+      "passed": true,
+      "details": "Correct use of 'use client', no server-specific code in client component"
+    },
+    "shadcnUsage": {
+      "passed": true,
+      "details": "Uses Card, Table, Button, Input, Label, Badge, Select components correctly"
+    },
+    "apiClient": {
+      "passed": true,
+      "details": "Uses API client functions from @/lib/api/audit and @/lib/api/users, no raw fetch calls"
+    },
+    "pathAliases": {
+      "passed": true,
+      "details": "Consistent use of @/ path alias throughout"
+    },
+    "accessibility": {
+      "passed": true,
+      "details": "Semantic HTML, proper table structure, ARIA labels on inputs, role attributes on dynamic elements",
+      "notes": "Minor improvement possible: add aria-label to loading spinner"
+    },
+    "security": {
+      "passed": true,
+      "details": "RBAC check for Administrator role, no XSS vulnerabilities, no hardcoded secrets"
+    },
+    "errorHandling": {
+      "passed": true,
+      "details": "Proper try-catch blocks, user-facing error messages via console.error (could be improved with toast notifications)"
+    }
   },
-  "qualityMetrics": {
-    "filesReviewed": 4,
-    "linesOfCode": 850,
-    "testCoverage": "Comprehensive (19 tests covering all role-specific scenarios)",
-    "accessibilityScore": "EXCELLENT (axe violations: 0)",
-    "typeScriptStrict": true,
-    "errorSuppressions": 0
+  "testQualityChecks": {
+    "userObservableBehavior": {
+      "passed": true,
+      "details": "Tests verify what users see and can do, not implementation details"
+    },
+    "semanticQueries": {
+      "passed": true,
+      "details": "Uses getByRole, getByText, getByLabelText appropriately"
+    },
+    "noLibraryInternals": {
+      "passed": true,
+      "details": "Does not test internal DOM structure or third-party library internals"
+    },
+    "mockQuality": {
+      "passed": true,
+      "details": "Proper mock factories, correct use of mockResolvedValue/mockResolvedValueOnce"
+    }
   },
-  "positives": [
-    "Clean, well-structured React component following Next.js 16 patterns",
-    "Excellent test coverage with 19 tests covering all acceptance criteria",
-    "No error suppressions (eslint-disable, @ts-ignore, etc.) - CRITICAL requirement met",
-    "Proper use of API client (no raw fetch calls)",
-    "Accessibility-first test queries (getByRole, getByLabelText)",
-    "Proper TypeScript typing with no 'any' types",
-    "Good error handling with user-friendly error messages",
-    "Loading states implemented with skeleton UI",
-    "Empty states handled for all panels",
-    "Semantic HTML and proper ARIA attributes",
-    "Uses Shadcn UI components (Card, Badge) consistently",
-    "Path aliases (@/) used correctly",
-    "Test quality validation passes",
-    "AppHeader component properly integrated"
+  "recommendation": "APPROVED_WITH_MINOR_FIXES",
+  "summary": "Story 8 implementation is high quality with one critical UI bug (dynamic Tailwind classes) that must be fixed before production. No error suppressions, good test coverage, proper API integration. The dynamic Tailwind class issue will cause styles to fail in production builds.",
+  "mustFixBeforeVerify": [
+    "Fix dynamic Tailwind class names in security alerts (lines 269, 271)"
   ],
-  "acceptanceCriteria": {
-    "fullyMet": [
-      "AC #1: Welcome message with display name and roles",
-      "AC #2: Today's date displayed in header",
-      "AC #3: Pending Actions panel",
-      "AC #4: Active Batches panel",
-      "AC #5: Recent Activity panel",
-      "AC #6: Operations Lead file alerts",
-      "AC #7: Data Quality Alerts panel",
-      "AC #8: Active batches in various states",
-      "AC #9: Analyst master data tasks",
-      "AC #10: Approver L2 pending batches",
-      "AC #11: Review link for pending approvals",
-      "AC #15: Administrator alerts",
-      "AC #16: Review link navigation",
-      "AC #17: Fix link navigation",
-      "AC #18: View Details navigation"
-    ],
-    "partiallyMet": [],
-    "notMet": [
-      "AC #12: Workflow Status visualization (visual progress: Data Prep → L1 → L2 → L3 → ✓)",
-      "AC #13: Real-time updates for pending actions count",
-      "AC #14: Real-time updates for activity panel",
-      "AC #19: View Full Log navigation to Audit Trail Viewer"
-    ]
-  },
-  "recommendations": [
-    "Address HIGH issue H1: Clarify API endpoint discrepancy with user before proceeding to VERIFY",
-    "Consider deferring real-time updates (AC #13-14) and workflow visualization (AC #12) to future stories",
-    "Update story acceptance criteria to reflect actual implementation scope if features were intentionally deferred"
-  ],
-  "nextSteps": "Proceed to VERIFY phase after clarifying API endpoint strategy with user"
+  "niceToHave": [
+    "Replace unused 'err' variable with '_' at line 100",
+    "Add aria-label to loading spinner",
+    "Consider toast notifications for errors instead of console.error"
+  ]
 }

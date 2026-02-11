@@ -59,7 +59,7 @@ tags:
   - name: Dashboard
     description: Aggregation endpoints for the role-based dashboard home screen
   - name: Audit
-    description: Audit trail access
+    description: Audit trail access and login activity monitoring
 
 paths:
   # ============================================
@@ -124,6 +124,64 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/AuthResponse'
+
+  /auth/session:
+    get:
+      tags: [Auth]
+      summary: Get current session info
+      description: Retrieve current session details including user info, permissions, and session expiration
+      operationId: getSession
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Current session details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SessionResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /auth/logout:
+    post:
+      tags: [Auth]
+      summary: Terminate current session
+      description: Invalidate the current session and clear server-side session data
+      operationId: logout
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Session terminated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Session terminated successfully
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /auth/permissions:
+    get:
+      tags: [Auth]
+      summary: Get all permissions for current user
+      description: Returns the full list of permissions for the authenticated user based on their assigned roles
+      operationId: getPermissions
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: User permissions
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PermissionsResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
 
   # ============================================
   # USER MANAGEMENT
@@ -2017,6 +2075,302 @@ paths:
   # ============================================
   # AUDIT
   # ============================================
+  # ============================================
+  # LOGIN ACTIVITY MONITORING
+  # ============================================
+  /audit/logins:
+    get:
+      tags: [Audit]
+      summary: Get login attempt history
+      description: |
+        Returns paginated login attempt records with optional filtering by date range,
+        status, and user. Supports sorting by timestamp. Includes IP geolocation data
+        for UK and South Africa regions.
+      operationId: getLoginActivity
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: from
+          in: query
+          description: Start of date range filter (ISO 8601)
+          schema:
+            type: string
+            format: date-time
+        - name: to
+          in: query
+          description: End of date range filter (ISO 8601)
+          schema:
+            type: string
+            format: date-time
+        - name: status
+          in: query
+          description: Filter by login status
+          schema:
+            type: string
+            enum: [all, success, failed]
+            default: all
+        - name: userId
+          in: query
+          description: Filter by specific user ID
+          schema:
+            type: integer
+        - name: username
+          in: query
+          description: Filter by username (partial match)
+          schema:
+            type: string
+        - name: sortBy
+          in: query
+          schema:
+            type: string
+            enum: [timestamp, username, status]
+            default: timestamp
+        - name: sortOrder
+          in: query
+          schema:
+            type: string
+            enum: [asc, desc]
+            default: desc
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/PageSizeParam'
+      responses:
+        '200':
+          description: Paginated login activity records
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginActivityList'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /audit/logins/failed:
+    get:
+      tags: [Audit]
+      summary: Get failed login attempts
+      description: Returns only failed login attempts with failure reasons. Includes consecutive failure counts per user.
+      operationId: getFailedLogins
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: from
+          in: query
+          schema:
+            type: string
+            format: date-time
+        - name: to
+          in: query
+          schema:
+            type: string
+            format: date-time
+        - name: userId
+          in: query
+          schema:
+            type: integer
+        - name: failureReason
+          in: query
+          description: Filter by failure reason
+          schema:
+            type: string
+            enum: [invalid_password, user_not_found, account_deactivated, account_locked]
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/PageSizeParam'
+      responses:
+        '200':
+          description: Failed login attempts
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginActivityList'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /audit/logins/user/{userId}:
+    get:
+      tags: [Audit]
+      summary: Get login history for specific user
+      description: Returns login attempt history for a specific user, including both successful and failed attempts.
+      operationId: getUserLoginHistory
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: from
+          in: query
+          schema:
+            type: string
+            format: date-time
+        - name: to
+          in: query
+          schema:
+            type: string
+            format: date-time
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [all, success, failed]
+            default: all
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/PageSizeParam'
+      responses:
+        '200':
+          description: User login history
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginActivityList'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /audit/logins/alerts:
+    get:
+      tags: [Audit]
+      summary: Get security alerts
+      description: |
+        Returns active security alerts including:
+        - Multiple failed login attempts from same IP (5+ in 5 minutes)
+        - Account lockouts (3 consecutive failures)
+        - Potential brute force attacks (10+ failed from different IPs in 1 hour)
+        - New location logins
+        - Impossible travel detections
+      operationId: getLoginAlerts
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: severity
+          in: query
+          description: Filter by alert severity
+          schema:
+            type: string
+            enum: [all, critical, warning, info]
+            default: all
+        - name: active
+          in: query
+          description: Only return active (unresolved) alerts
+          schema:
+            type: boolean
+            default: true
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/PageSizeParam'
+      responses:
+        '200':
+          description: Security alerts
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SecurityAlertList'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /audit/logins/export:
+    get:
+      tags: [Audit]
+      summary: Export login activity report
+      description: Exports filtered login activity records as an Excel file. Columns include Timestamp, Username, User ID, Status, IP Address, Location, User Agent, Failure Reason.
+      operationId: exportLoginActivity
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: from
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date-time
+        - name: to
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date-time
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [all, success, failed]
+            default: all
+        - name: userId
+          in: query
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Excel file download
+          content:
+            application/vnd.openxmlformats-officedocument.spreadsheetml.sheet:
+              schema:
+                type: string
+                format: binary
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /users/{id}/unlock:
+    post:
+      tags: [Users]
+      summary: Manually unlock a locked user account
+      description: |
+        Allows an administrator to immediately unlock a user account that was
+        automatically locked due to consecutive failed login attempts.
+        The lockout timer is cleared and the user can attempt login immediately.
+      operationId: unlockUserAccount
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/IdParam'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                reason:
+                  type: string
+                  description: Administrator's reason for unlocking the account
+      responses:
+        '200':
+          description: Account unlocked successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Account unlocked successfully
+                  userId:
+                    type: integer
+                  unlockedAt:
+                    type: string
+                    format: date-time
+                  unlockedBy:
+                    type: string
+                    description: Username of the administrator who unlocked the account
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  # ============================================
+  # AUDIT TRAIL (existing)
+  # ============================================
   /audit/changes:
     get:
       tags: [Audit]
@@ -2205,6 +2559,48 @@ components:
           type: integer
         user:
           $ref: '#/components/schemas/User'
+
+    SessionResponse:
+      type: object
+      properties:
+        userId:
+          type: string
+        username:
+          type: string
+        displayName:
+          type: string
+        roles:
+          type: array
+          items:
+            type: string
+            enum: [OperationsLead, Analyst, ApproverL1, ApproverL2, ApproverL3, Administrator, ReadOnly]
+        permissions:
+          type: array
+          items:
+            type: string
+        expiresAt:
+          type: string
+          format: date-time
+          description: Session expiration timestamp
+        issuedAt:
+          type: string
+          format: date-time
+          description: Session creation timestamp
+
+    PermissionsResponse:
+      type: object
+      properties:
+        userId:
+          type: string
+        roles:
+          type: array
+          items:
+            type: string
+        permissions:
+          type: array
+          items:
+            type: string
+            description: Permission strings in format 'resource.action' (e.g. 'batch.create', 'instrument.update')
 
     User:
       type: object
@@ -3776,3 +4172,187 @@ components:
           type: integer
           description: Count of indexes missing price data
       required: [missingRatings, missingDurations, missingBetas, missingIndexPrices]
+
+    # ============================================
+    # Login Activity Monitoring
+    # ============================================
+    LoginAttempt:
+      type: object
+      description: A single login attempt record from the UserLoginLog table
+      properties:
+        id:
+          type: integer
+          description: Unique login attempt ID
+        timestamp:
+          type: string
+          format: date-time
+          description: When the login attempt occurred
+        username:
+          type: string
+          description: Username used in the attempt (may be "unknown" for non-existent users)
+        userId:
+          type: integer
+          nullable: true
+          description: User ID if the user exists, null otherwise
+        displayName:
+          type: string
+          nullable: true
+          description: User's display name if the user exists
+        isSuccessful:
+          type: boolean
+          description: Whether the login attempt was successful
+        status:
+          type: string
+          enum: [success, failed]
+          description: Login attempt status
+        ipAddress:
+          type: string
+          description: IP address of the login attempt
+        location:
+          type: string
+          nullable: true
+          description: Geolocation of the IP address (city/country for UK and South Africa regions, "Unknown" if lookup fails)
+          example: London, UK
+        userAgent:
+          type: string
+          nullable: true
+          description: Browser and OS information from the User-Agent header
+        failureReason:
+          type: string
+          nullable: true
+          enum: [invalid_password, user_not_found, account_deactivated, account_locked, null]
+          description: Reason for failure (null for successful logins)
+        consecutiveFailureCount:
+          type: integer
+          nullable: true
+          description: Number of consecutive failures for this user (null for successful logins)
+        flags:
+          type: array
+          items:
+            type: string
+            enum: [new_location, impossible_travel, ip_blocked, brute_force_target]
+          description: Security flags associated with this login attempt
+        accountLocked:
+          type: boolean
+          description: Whether the account is currently locked
+        lockExpiresAt:
+          type: string
+          format: date-time
+          nullable: true
+          description: When the account lockout expires (null if not locked)
+      required: [id, timestamp, username, isSuccessful, status, ipAddress]
+
+    LoginActivityList:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/LoginAttempt'
+        meta:
+          $ref: '#/components/schemas/PaginationMeta'
+        summary:
+          $ref: '#/components/schemas/LoginActivitySummary'
+
+    LoginActivitySummary:
+      type: object
+      description: Summary counts for the current filter selection
+      properties:
+        successfulLogins:
+          type: integer
+          description: Count of successful login attempts
+        failedAttempts:
+          type: integer
+          description: Count of failed login attempts
+        lockedAccounts:
+          type: integer
+          description: Count of currently locked accounts
+      required: [successfulLogins, failedAttempts, lockedAccounts]
+
+    SecurityAlert:
+      type: object
+      description: A security alert generated from login activity analysis
+      properties:
+        id:
+          type: integer
+          description: Unique alert ID
+        type:
+          type: string
+          enum: [multiple_failed_ip, account_locked, brute_force, new_location, impossible_travel]
+          description: |
+            Type of security alert:
+            - multiple_failed_ip: 5+ failed attempts from same IP in 5 minutes
+            - account_locked: Account locked after 3 consecutive failures
+            - brute_force: 10+ failed attempts from different IPs in 1 hour
+            - new_location: Login from a location never used before
+            - impossible_travel: Logins from distant locations within 1 hour
+        severity:
+          type: string
+          enum: [critical, warning, info]
+          description: Alert severity level
+        message:
+          type: string
+          description: Human-readable alert message
+          example: "Multiple failed login attempts detected from IP 203.45.67.89"
+        username:
+          type: string
+          nullable: true
+          description: Affected username (if applicable)
+        userId:
+          type: integer
+          nullable: true
+          description: Affected user ID (if applicable)
+        ipAddress:
+          type: string
+          nullable: true
+          description: IP address involved (if applicable)
+        location:
+          type: string
+          nullable: true
+          description: Location involved (if applicable)
+        createdAt:
+          type: string
+          format: date-time
+          description: When the alert was generated
+        isActive:
+          type: boolean
+          description: Whether the alert is still active/unresolved
+        resolvedAt:
+          type: string
+          format: date-time
+          nullable: true
+          description: When the alert was resolved (null if still active)
+        details:
+          type: object
+          description: Additional alert-specific details
+          properties:
+            attemptCount:
+              type: integer
+              description: Number of attempts that triggered the alert
+            timeWindowMinutes:
+              type: integer
+              description: Time window in which attempts occurred
+            lockExpiresAt:
+              type: string
+              format: date-time
+              nullable: true
+              description: When the lockout expires (for account_locked alerts)
+            fromLocation:
+              type: string
+              nullable: true
+              description: First location (for impossible_travel alerts)
+            toLocation:
+              type: string
+              nullable: true
+              description: Second location (for impossible_travel alerts)
+      required: [id, type, severity, message, createdAt, isActive]
+
+    SecurityAlertList:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/SecurityAlert'
+        meta:
+          $ref: '#/components/schemas/PaginationMeta'

@@ -133,6 +133,23 @@ export interface UpdateUserRolesRequest {
 }
 
 /**
+ * Request to unlock a user account
+ */
+export interface UnlockUserAccountRequest {
+  reason?: string; // Optional reason for unlocking the account
+}
+
+/**
+ * Response from unlocking a user account
+ */
+export interface UnlockUserAccountResponse {
+  message: string;
+  userId: number;
+  unlockedAt: string;
+  unlockedBy: string;
+}
+
+/**
  * List users with optional filtering
  *
  * @param params - Query parameters for filtering and pagination
@@ -217,6 +234,21 @@ export async function reactivateUser(
   lastChangedUser: string,
 ): Promise<UserDetail> {
   return post<UserDetail>(`/users/${id}/reactivate`, {}, lastChangedUser);
+}
+
+/**
+ * Unlock a locked user account
+ * Maps to POST /users/{id}/unlock
+ *
+ * @param id - User ID
+ * @param data - Optional unlock request with reason
+ * @returns Unlock response
+ */
+export async function unlockUserAccount(
+  id: number,
+  data?: UnlockUserAccountRequest,
+): Promise<UnlockUserAccountResponse> {
+  return post<UnlockUserAccountResponse>(`/users/${id}/unlock`, data || {});
 }
 
 /**

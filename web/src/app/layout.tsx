@@ -3,6 +3,7 @@ import { Inter } from 'next/font/google';
 import './globals.css';
 import { ToastProvider } from '@/contexts/ToastContext';
 import { ToastContainer } from '@/components/toast/ToastContainer';
+import { AuthenticatedNav } from '@/components/layout/AuthenticatedNav';
 
 const inter = Inter({
   subsets: ['latin'],
@@ -25,6 +26,7 @@ export default async function RootLayout({
       <body className={`${inter.variable} font-sans antialiased`}>
         <ToastProvider>
           <div className="min-h-screen flex flex-col">
+            <AuthenticatedNav />
             <main className="flex-1">{children}</main>
           </div>
           <ToastContainer />

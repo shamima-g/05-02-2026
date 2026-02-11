@@ -3,7 +3,7 @@
  * - Epic: 1
  * - Story: 3
  * - Route: /admin/users
- * - Target File: app/admin/users/page.tsx
+ * - Target File: app/admin/users/users-client.tsx
  * - Page Action: create_new
  *
  * Tests for User Lifecycle Management - User Administration Page
@@ -13,7 +13,7 @@ import userEvent from '@testing-library/user-event';
 import { axe } from 'vitest-axe';
 import { vi, describe, it, expect, beforeEach } from 'vitest';
 import { useRouter } from 'next/navigation';
-import UsersPage from '@/app/admin/users/page';
+import UsersClient from '@/app/admin/users/users-client';
 import * as authApi from '@/lib/api/auth';
 import * as usersApi from '@/lib/api/users';
 import type { AuthUser } from '@/lib/api/auth';
@@ -225,7 +225,7 @@ describe('User Administration Page', () => {
         mockUser,
       );
 
-      render(<UsersPage />);
+      render(<UsersClient />);
 
       await waitFor(() => {
         expect(screen.getByText(/access denied/i)).toBeInTheDocument();
@@ -249,7 +249,7 @@ describe('User Administration Page', () => {
         mockUsers,
       );
 
-      render(<UsersPage />);
+      render(<UsersClient />);
 
       await waitFor(() => {
         expect(screen.getByText('John Smith')).toBeInTheDocument();
@@ -274,7 +274,7 @@ describe('User Administration Page', () => {
         mockUsers,
       );
 
-      render(<UsersPage />);
+      render(<UsersClient />);
 
       await waitFor(() => {
         expect(screen.getByText(/showing 3 active users/i)).toBeInTheDocument();
@@ -291,7 +291,7 @@ describe('User Administration Page', () => {
         mockUsers,
       );
 
-      render(<UsersPage />);
+      render(<UsersClient />);
 
       await waitFor(() => {
         expect(screen.getByText('Operations')).toBeInTheDocument();
@@ -321,7 +321,7 @@ describe('User Administration Page', () => {
         .mockResolvedValueOnce(allUsers)
         .mockResolvedValueOnce(filteredUsers);
 
-      render(<UsersPage />);
+      render(<UsersClient />);
 
       await waitFor(() => {
         expect(screen.getByText('John Smith')).toBeInTheDocument();
@@ -357,7 +357,7 @@ describe('User Administration Page', () => {
         .mockResolvedValueOnce(activeUsers)
         .mockResolvedValueOnce(inactiveUsers);
 
-      render(<UsersPage />);
+      render(<UsersClient />);
 
       await waitFor(() => {
         expect(screen.getByText('John Smith')).toBeInTheDocument();
@@ -400,7 +400,7 @@ describe('User Administration Page', () => {
         .mockResolvedValueOnce(allUsers)
         .mockResolvedValueOnce(analystUsers);
 
-      render(<UsersPage />);
+      render(<UsersClient />);
 
       await waitFor(() => {
         expect(screen.getByText('John Smith')).toBeInTheDocument();
@@ -434,7 +434,7 @@ describe('User Administration Page', () => {
         .mockResolvedValueOnce(allUsers)
         .mockResolvedValueOnce(operationsUsers);
 
-      render(<UsersPage />);
+      render(<UsersClient />);
 
       await waitFor(() => {
         expect(screen.getByText('John Smith')).toBeInTheDocument();
@@ -465,7 +465,7 @@ describe('User Administration Page', () => {
         createMockUserList(),
       );
 
-      render(<UsersPage />);
+      render(<UsersClient />);
 
       await waitFor(() => {
         expect(screen.getByText('John Smith')).toBeInTheDocument();
@@ -513,7 +513,7 @@ describe('User Administration Page', () => {
         newUser,
       );
 
-      render(<UsersPage />);
+      render(<UsersClient />);
 
       await waitFor(() => {
         expect(screen.getByText('John Smith')).toBeInTheDocument();
@@ -581,7 +581,7 @@ describe('User Administration Page', () => {
         newUser,
       );
 
-      render(<UsersPage />);
+      render(<UsersClient />);
 
       await waitFor(() => {
         expect(screen.getByText('John Smith')).toBeInTheDocument();
@@ -646,7 +646,7 @@ describe('User Administration Page', () => {
         newUser,
       );
 
-      render(<UsersPage />);
+      render(<UsersClient />);
 
       await waitFor(() => {
         expect(screen.getByText('John Smith')).toBeInTheDocument();
@@ -709,7 +709,7 @@ describe('User Administration Page', () => {
         createMockUserList(),
       );
 
-      render(<UsersPage />);
+      render(<UsersClient />);
 
       await waitFor(() => {
         expect(screen.getByText('John Smith')).toBeInTheDocument();
@@ -743,7 +743,7 @@ describe('User Administration Page', () => {
         createMockUserList(),
       );
 
-      render(<UsersPage />);
+      render(<UsersClient />);
 
       await waitFor(() => {
         expect(screen.getByText('John Smith')).toBeInTheDocument();
@@ -784,7 +784,7 @@ describe('User Administration Page', () => {
         statusCode: 400,
       });
 
-      render(<UsersPage />);
+      render(<UsersClient />);
 
       await waitFor(() => {
         expect(screen.getByText('John Smith')).toBeInTheDocument();
@@ -836,7 +836,7 @@ describe('User Administration Page', () => {
         statusCode: 400,
       });
 
-      render(<UsersPage />);
+      render(<UsersClient />);
 
       await waitFor(() => {
         expect(screen.getByText('John Smith')).toBeInTheDocument();
@@ -886,7 +886,7 @@ describe('User Administration Page', () => {
         createMockUserList(),
       );
 
-      render(<UsersPage />);
+      render(<UsersClient />);
 
       await waitFor(() => {
         expect(screen.getByText('John Smith')).toBeInTheDocument();
@@ -931,7 +931,7 @@ describe('User Administration Page', () => {
         userToEdit,
       );
 
-      render(<UsersPage />);
+      render(<UsersClient />);
 
       await waitFor(() => {
         expect(screen.getByText('John Smith')).toBeInTheDocument();
@@ -969,7 +969,7 @@ describe('User Administration Page', () => {
         updatedUser,
       );
 
-      render(<UsersPage />);
+      render(<UsersClient />);
 
       await waitFor(() => {
         expect(screen.getByText('John Smith')).toBeInTheDocument();
@@ -1027,7 +1027,7 @@ describe('User Administration Page', () => {
         },
       ]);
 
-      render(<UsersPage />);
+      render(<UsersClient />);
 
       await waitFor(() => {
         expect(screen.getByText('John Smith')).toBeInTheDocument();
@@ -1091,7 +1091,7 @@ describe('User Administration Page', () => {
         userToEdit.roles[0],
       ]);
 
-      render(<UsersPage />);
+      render(<UsersClient />);
 
       await waitFor(() => {
         expect(screen.getByText('John Smith')).toBeInTheDocument();
@@ -1148,7 +1148,7 @@ describe('User Administration Page', () => {
         createMockUserActivityList(),
       );
 
-      render(<UsersPage />);
+      render(<UsersClient />);
 
       await waitFor(() => {
         expect(screen.getByText('John Smith')).toBeInTheDocument();
@@ -1189,7 +1189,7 @@ describe('User Administration Page', () => {
         userDetails,
       );
 
-      render(<UsersPage />);
+      render(<UsersClient />);
 
       await waitFor(() => {
         expect(screen.getByText('John Smith')).toBeInTheDocument();
@@ -1230,7 +1230,7 @@ describe('User Administration Page', () => {
         activities,
       );
 
-      render(<UsersPage />);
+      render(<UsersClient />);
 
       await waitFor(() => {
         expect(screen.getByText('John Smith')).toBeInTheDocument();
@@ -1267,7 +1267,7 @@ describe('User Administration Page', () => {
         userDetails,
       );
 
-      render(<UsersPage />);
+      render(<UsersClient />);
 
       await waitFor(() => {
         expect(screen.getByText('John Smith')).toBeInTheDocument();
@@ -1302,7 +1302,7 @@ describe('User Administration Page', () => {
         createMockUserList(),
       );
 
-      render(<UsersPage />);
+      render(<UsersClient />);
 
       await waitFor(() => {
         expect(screen.getByText('John Smith')).toBeInTheDocument();
@@ -1338,7 +1338,7 @@ describe('User Administration Page', () => {
         deactivatedUser,
       );
 
-      render(<UsersPage />);
+      render(<UsersClient />);
 
       await waitFor(() => {
         expect(screen.getByText('John Smith')).toBeInTheDocument();
@@ -1389,7 +1389,7 @@ describe('User Administration Page', () => {
         inactiveUsers,
       );
 
-      render(<UsersPage />);
+      render(<UsersClient />);
 
       await waitFor(() => {
         expect(screen.getByText(/inactive/i)).toBeInTheDocument();
@@ -1410,7 +1410,7 @@ describe('User Administration Page', () => {
         createMockUserList(),
       );
 
-      render(<UsersPage />);
+      render(<UsersClient />);
 
       await waitFor(() => {
         expect(screen.getByText('John Smith')).toBeInTheDocument();
@@ -1461,7 +1461,7 @@ describe('User Administration Page', () => {
         reactivatedUser,
       );
 
-      render(<UsersPage />);
+      render(<UsersClient />);
 
       await waitFor(() => {
         expect(screen.getByText('John Smith')).toBeInTheDocument();
@@ -1496,7 +1496,7 @@ describe('User Administration Page', () => {
         mockBlob,
       );
 
-      render(<UsersPage />);
+      render(<UsersClient />);
 
       await waitFor(() => {
         expect(screen.getByText('John Smith')).toBeInTheDocument();
@@ -1523,7 +1523,7 @@ describe('User Administration Page', () => {
         createMockUserList(),
       );
 
-      const { container } = render(<UsersPage />);
+      const { container } = render(<UsersClient />);
 
       await waitFor(() => {
         expect(screen.queryByRole('progressbar')).not.toBeInTheDocument();
@@ -1542,7 +1542,7 @@ describe('User Administration Page', () => {
         createMockUserList(),
       );
 
-      render(<UsersPage />);
+      render(<UsersClient />);
 
       await waitFor(() => {
         expect(screen.getByRole('table')).toBeInTheDocument();

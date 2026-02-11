@@ -21,6 +21,8 @@ After VERIFY passes for a story:
 
 First, check if workflow state exists and is valid:
 
+
+
 ```bash
 node .claude/scripts/transition-phase.js --show
 ```

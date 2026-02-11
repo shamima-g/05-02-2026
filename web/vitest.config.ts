@@ -7,6 +7,9 @@ export default defineConfig({
   test: {
     environment: 'jsdom',
     globals: true,
+    fakeTimers: {
+      shouldAdvanceTime: true,
+    },
     setupFiles: ['./vitest.setup.ts'],
     include: [
       'src/**/__tests__/**/*.[jt]s?(x)',
