@@ -10,7 +10,7 @@
  */
 
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import type {} from '@testing-library/react';
 import { getSession } from '@/lib/auth/auth-server';
 import { redirect } from 'next/navigation';
 import type { AuthUser } from '@/types/auth';
