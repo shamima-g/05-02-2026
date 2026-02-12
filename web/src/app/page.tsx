@@ -275,43 +275,80 @@ export default function HomePage() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              {activeBatches && activeBatches.items.length > 0 ? (
-                <ul className="space-y-3">
-                  {activeBatches.items.map((batch) => (
-                    <li
-                      key={batch.id}
-                      className="flex items-center justify-between rounded-lg border p-3 transition-colors hover:bg-accent/50"
-                    >
-                      <div className="min-w-0 flex-1">
-                        <p className="font-medium">
-                          {batch.reportBatchType} -{' '}
-                          {formatReportDate(batch.reportDate)}
-                        </p>
-                        <Badge
-                          variant={getStatusVariant(batch.status)}
-                          className="mt-1"
-                        >
-                          {batch.status}
-                        </Badge>
-                        <WorkflowProgress status={batch.status} />
+              {(() => {
+                if (!activeBatches || activeBatches.items.length === 0) {
+                  return (
+                    <p className="text-muted-foreground">No active batches</p>
+                  );
+                }
+
+                const activeBatch = activeBatches.items.find(
+                  (b) => b.status !== 'Approved',
+                );
+                const previousBatch = activeBatches.items.find(
+                  (b) => b.status === 'Approved',
+                );
+
+                return (
+                  <div className="space-y-4">
+                    {activeBatch && (
+                      <div className="rounded-lg border p-4">
+                        <div className="flex items-center justify-between">
+                          <div className="min-w-0 flex-1">
+                            <p className="font-medium text-base">
+                              {formatReportDate(activeBatch.reportDate)}
+                            </p>
+                            <Badge
+                              variant={getStatusVariant(activeBatch.status)}
+                              className="mt-1"
+                            >
+                              {activeBatch.status}
+                            </Badge>
+                            <WorkflowProgress status={activeBatch.status} />
+                          </div>
+                          <a
+                            href={`/batches/${activeBatch.id}`}
+                            onClick={(e) => {
+                              e.preventDefault();
+                              router.push(`/batches/${activeBatch.id}`);
+                            }}
+                            className="inline-flex items-center gap-1 text-sm font-medium text-primary hover:underline ml-3"
+                          >
+                            View Details
+                            <ChevronRight className="h-3 w-3" />
+                          </a>
+                        </div>
                       </div>
-                      <a
-                        href={`/batches/${batch.id}`}
-                        onClick={(e) => {
-                          e.preventDefault();
-                          router.push(`/batches/${batch.id}`);
-                        }}
-                        className="inline-flex items-center gap-1 text-sm font-medium text-primary hover:underline ml-3"
-                      >
-                        View Details
-                        <ChevronRight className="h-3 w-3" />
-                      </a>
-                    </li>
-                  ))}
-                </ul>
-              ) : (
-                <p className="text-muted-foreground">No active batches</p>
-              )}
+                    )}
+
+                    {previousBatch && (
+                      <div className="rounded-lg border border-muted p-3 opacity-60">
+                        <div className="flex items-center justify-between">
+                          <div className="min-w-0 flex-1">
+                            <p className="text-sm text-muted-foreground">
+                              {formatReportDate(previousBatch.reportDate)}
+                            </p>
+                            <Badge variant="secondary" className="mt-1">
+                              Completed
+                            </Badge>
+                          </div>
+                          <a
+                            href={`/batches/${previousBatch.id}`}
+                            onClick={(e) => {
+                              e.preventDefault();
+                              router.push(`/batches/${previousBatch.id}`);
+                            }}
+                            className="inline-flex items-center gap-1 text-sm font-medium text-muted-foreground hover:text-primary hover:underline ml-3"
+                          >
+                            View Details
+                            <ChevronRight className="h-3 w-3" />
+                          </a>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                );
+              })()}
             </CardContent>
           </Card>
 

@@ -11,7 +11,7 @@ Create new reporting batches, view active batches, switch between reporting peri
 |  Dashboard  |  Batches  |  Files  |  Validation  |  Master Data  |  Admin  |
 +------------------------------------------------------------------------------+
 |                                                                              |
-|  Batch Management                                   [+ Create New Batch]    |
+|  Batch Management                    [+ Create New Batch (Feb 2026)]        |
 |                                                                              |
 |  Filter: ( ) Active  ( ) Closed  (•) All          Sort: [Latest First v]   |
 |                                                                              |
@@ -67,7 +67,7 @@ Create new reporting batches, view active batches, switch between reporting peri
 
 | Element | Type | Description |
 |---------|------|-------------|
-| [+ Create New Batch] | Button | Opens modal to create new reporting batch with reporting date selection |
+| [+ Create New Batch (Month Year)] | Button | Creates batch for next sequential month (last day). Disabled with tooltip when previous batch is not PendingComplete. Only visible to Analysts. No modal - single click action. |
 | Batch Card | Expandable Panel | Shows summary info with workflow progress, file status, validation status |
 | Workflow Progress | Visual Indicator | Shows stages with completed (✓), current (●), and pending states |
 | Status Badge | Label | Color-coded: Data Prep (blue), Approval stages (yellow), Closed (green) |
@@ -78,7 +78,7 @@ Create new reporting batches, view active batches, switch between reporting peri
 
 ## User Actions
 
-- **Create New Batch**: Open modal, enter reporting date, confirm creation (starts in Data Preparation state)
+- **Create New Batch**: Single click creates batch for the next sequential month (last day). No modal or date selection. Only available when previous batch is PendingComplete.
 - **Switch to Batch**: Change active working context to selected batch (affects all screens)
 - **View Details**: See comprehensive batch information including complete workflow history
 - **View Audit Log**: Navigate to audit trail viewer filtered to this batch
@@ -87,12 +87,15 @@ Create new reporting batches, view active batches, switch between reporting peri
 
 ## Business Rules
 
+- **Monthly only** - weekly batches are de-scoped; only monthly batches are available
+- **Sequential creation** - new batch is always for the next month; no date picker; previous batch must be PendingComplete
 - Users can work on multiple batches simultaneously by switching context
 - Only one batch is "active" at a time (shown in header across all screens)
 - Historical batches are read-only (no data modifications allowed)
 - Batch cannot be deleted (soft delete only for audit trail preservation)
-- Rejection clears calculations automatically (shown in status summary)
-- Each batch has unique identifier and reporting date
+- **Rejection always returns batch to Data Preparation** with rejection reason visible; calculations cleared automatically
+- **Batches always end at a complete status** - "Rejected" is not a terminal state; it's a return to Data Preparation for correction
+- Each batch has unique identifier and reporting date (last day of month)
 
 ## Navigation
 - **From:** Dashboard, global batch switcher in header

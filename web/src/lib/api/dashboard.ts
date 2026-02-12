@@ -35,11 +35,13 @@ export interface PendingAction {
 }
 
 /**
- * Report batch in the workflow
+ * Report batch in the workflow.
+ * Only monthly batches are supported. There can only be 1 active monthly
+ * batch at a time; the previous month will be in a completed state.
  */
 export interface ReportBatch {
   id: number;
-  reportBatchType: string;
+  reportBatchType: 'Monthly';
   reportDate: string;
   workflowInstanceId: string;
   status: string;

@@ -159,7 +159,7 @@ const createMockPendingActions = (
   }
 };
 
-// Mock active batches factory
+// Mock active batches factory — only monthly batches, 1 active + previous completed
 const createMockActiveBatches = (): ActiveBatchesResponse => ({
   items: [
     {
@@ -174,20 +174,13 @@ const createMockActiveBatches = (): ActiveBatchesResponse => ({
       reportBatchType: 'Monthly',
       reportDate: '2025-12-31',
       workflowInstanceId: 'wf-002',
-      status: 'Level2Pending',
-    },
-    {
-      id: 4,
-      reportBatchType: 'Weekly',
-      reportDate: '2026-01-24',
-      workflowInstanceId: 'wf-004',
-      status: 'Level1Pending',
+      status: 'Approved',
     },
   ],
   meta: {
     page: 1,
     pageSize: 20,
-    totalItems: 3,
+    totalItems: 2,
     totalPages: 1,
   },
 });
@@ -330,7 +323,7 @@ describe('Dashboard Page', () => {
       });
     });
 
-    it('displays Active Batches panel with batch list', async () => {
+    it('displays Active Batches panel with current and previous batch', async () => {
       const mockUser = createMockUser();
       (authApi.getCurrentUser as ReturnType<typeof vi.fn>).mockResolvedValue(
         mockUser,
@@ -354,8 +347,11 @@ describe('Dashboard Page', () => {
         expect(
           screen.getByRole('heading', { name: /active batches/i }),
         ).toBeInTheDocument();
+        // Active batch: January 2026
         expect(screen.getAllByText(/January 2026/i)[0]).toBeInTheDocument();
+        // Previous completed batch: December 2025
         expect(screen.getAllByText(/December 2025/i)[0]).toBeInTheDocument();
+        expect(screen.getByText(/Completed/i)).toBeInTheDocument();
       });
     });
 
@@ -461,7 +457,7 @@ describe('Dashboard Page', () => {
       });
     });
 
-    it('shows batches in DataPreparation or approval states', async () => {
+    it('shows active batch status and previous month as completed', async () => {
       const mockUser = createMockUser({ roles: ['Analyst'] });
       (authApi.getCurrentUser as ReturnType<typeof vi.fn>).mockResolvedValue(
         mockUser,
@@ -482,9 +478,10 @@ describe('Dashboard Page', () => {
       render(<HomePage />);
 
       await waitFor(() => {
+        // Active batch shows its workflow status
         expect(screen.getByText(/DataPreparation/i)).toBeInTheDocument();
-        expect(screen.getByText(/Level2Pending/i)).toBeInTheDocument();
-        expect(screen.getByText(/Level1Pending/i)).toBeInTheDocument();
+        // Previous month shows as completed
+        expect(screen.getByText(/Completed/i)).toBeInTheDocument();
       });
     });
   });
@@ -697,7 +694,7 @@ describe('Dashboard Page', () => {
       );
     });
 
-    it('navigates to batch details when View Details is clicked', async () => {
+    it('navigates to active batch details when View Details is clicked', async () => {
       const user = userEvent.setup();
       const mockUser = createMockUser();
       (authApi.getCurrentUser as ReturnType<typeof vi.fn>).mockResolvedValue(
@@ -722,6 +719,7 @@ describe('Dashboard Page', () => {
         expect(screen.getAllByText(/January 2026/i)[0]).toBeInTheDocument();
       });
 
+      // First View Details link is for the active batch (id: 1)
       const viewDetailsLinks = screen.getAllByRole('link', {
         name: /view details/i,
       });
@@ -889,7 +887,7 @@ describe('Dashboard Page', () => {
   });
 
   describe('Workflow Status Visualization', () => {
-    it('displays workflow stage labels for active batches', async () => {
+    it('displays workflow stage labels for the active batch', async () => {
       const mockUser = createMockUser();
       (authApi.getCurrentUser as ReturnType<typeof vi.fn>).mockResolvedValue(
         mockUser,
@@ -910,11 +908,12 @@ describe('Dashboard Page', () => {
       render(<HomePage />);
 
       await waitFor(() => {
-        // Workflow stage labels should appear in the batches panel
-        expect(screen.getAllByText('Data Prep').length).toBeGreaterThan(0);
-        expect(screen.getAllByText('L1').length).toBeGreaterThan(0);
-        expect(screen.getAllByText('L2').length).toBeGreaterThan(0);
-        expect(screen.getAllByText('L3').length).toBeGreaterThan(0);
+        // Workflow stage labels appear for the single active batch
+        expect(screen.getByText('Data Prep')).toBeInTheDocument();
+        expect(screen.getByText('L1')).toBeInTheDocument();
+        expect(screen.getByText('L2')).toBeInTheDocument();
+        expect(screen.getByText('L3')).toBeInTheDocument();
+        expect(screen.getByText('Published')).toBeInTheDocument();
       });
     });
 
@@ -975,7 +974,7 @@ describe('Dashboard Page', () => {
       });
     });
 
-    it('shows all stages completed for an Approved batch', async () => {
+    it('shows Approved batch as completed without workflow stepper', async () => {
       const mockUser = createMockUser();
       (authApi.getCurrentUser as ReturnType<typeof vi.fn>).mockResolvedValue(
         mockUser,
@@ -1007,16 +1006,12 @@ describe('Dashboard Page', () => {
       render(<HomePage />);
 
       await waitFor(() => {
-        const workflow = screen.getByLabelText('Workflow progress');
-        const completedStages = workflow.querySelectorAll(
-          '[data-stage-state="completed"]',
-        );
-        expect(completedStages).toHaveLength(5); // All 5 stages completed
-
-        const pendingStages = workflow.querySelectorAll(
-          '[data-stage-state="pending"]',
-        );
-        expect(pendingStages).toHaveLength(0);
+        // Approved batch shows as previous completed — no workflow stepper
+        expect(screen.getByText('November 2025')).toBeInTheDocument();
+        expect(screen.getByText('Completed')).toBeInTheDocument();
+        expect(
+          screen.queryByLabelText('Workflow progress'),
+        ).not.toBeInTheDocument();
       });
     });
   });
