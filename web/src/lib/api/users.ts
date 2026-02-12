@@ -5,7 +5,7 @@
  * Uses the base API client for consistent error handling and request formatting.
  */
 
-import { get, post, put, apiClient } from '@/lib/api/client';
+import { get, post, put, del, apiClient } from '@/lib/api/client';
 
 /**
  * Role information
@@ -235,6 +235,20 @@ export async function reactivateUser(
   lastChangedUser: string,
 ): Promise<UserDetail> {
   return post<UserDetail>(`/users/${id}/reactivate`, {}, lastChangedUser);
+}
+
+/**
+ * Permanently delete a user
+ *
+ * @param id - User ID
+ * @param lastChangedUser - Username of the admin deleting the user (for audit)
+ * @returns void
+ */
+export async function deleteUser(
+  id: number,
+  lastChangedUser: string,
+): Promise<void> {
+  return del<void>(`/users/${id}`, lastChangedUser);
 }
 
 /**

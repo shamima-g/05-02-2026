@@ -43,6 +43,7 @@ vi.mock('@/lib/api/users', () => ({
   updateUser: vi.fn(),
   deactivateUser: vi.fn(),
   reactivateUser: vi.fn(),
+  deleteUser: vi.fn(),
   getUserActivity: vi.fn(),
   getUserRoles: vi.fn(),
   updateUserRoles: vi.fn(),
@@ -1530,6 +1531,163 @@ describe('User Administration Page', () => {
       await waitFor(() => {
         expect(usersApi.exportUsers).toHaveBeenCalled();
       });
+    });
+  });
+
+  describe('Delete User', () => {
+    it('shows delete confirmation modal when Delete is clicked', async () => {
+      const user = userEvent.setup();
+      const mockUser = createMockAdminUser();
+
+      (authApi.getCurrentUser as ReturnType<typeof vi.fn>).mockResolvedValue(
+        mockUser,
+      );
+      (usersApi.listUsers as ReturnType<typeof vi.fn>).mockResolvedValue(
+        createMockUserList(),
+      );
+
+      render(<UsersClient />);
+
+      await waitFor(() => {
+        expect(screen.getByText('John Smith')).toBeInTheDocument();
+      });
+
+      const deleteButton = screen.getAllByRole('button', {
+        name: /^delete$/i,
+      })[0];
+      await user.click(deleteButton);
+
+      await waitFor(() => {
+        expect(screen.getByRole('dialog')).toBeInTheDocument();
+        expect(
+          screen.getByText(/this action is permanent and cannot be undone/i),
+        ).toBeInTheDocument();
+      });
+    });
+
+    it('deletes user when username confirmation matches', async () => {
+      const user = userEvent.setup();
+      const mockUser = createMockAdminUser();
+
+      (authApi.getCurrentUser as ReturnType<typeof vi.fn>).mockResolvedValue(
+        mockUser,
+      );
+      (usersApi.listUsers as ReturnType<typeof vi.fn>).mockResolvedValue(
+        createMockUserList(),
+      );
+      (usersApi.deleteUser as ReturnType<typeof vi.fn>).mockResolvedValue(
+        undefined,
+      );
+
+      render(<UsersClient />);
+
+      await waitFor(() => {
+        expect(screen.getByText('John Smith')).toBeInTheDocument();
+      });
+
+      const deleteButton = screen.getAllByRole('button', {
+        name: /^delete$/i,
+      })[0];
+      await user.click(deleteButton);
+
+      await waitFor(() => {
+        expect(screen.getByRole('dialog')).toBeInTheDocument();
+      });
+
+      const confirmInput = screen.getByLabelText(/type the username/i);
+      await user.type(confirmInput, 'jsmith');
+
+      const confirmButton = screen.getByRole('button', {
+        name: /confirm delete/i,
+      });
+      await user.click(confirmButton);
+
+      await waitFor(() => {
+        expect(usersApi.deleteUser).toHaveBeenCalledWith(1, 'admin');
+      });
+    }, 10000);
+
+    it('shows error when username confirmation does not match', async () => {
+      const user = userEvent.setup();
+      const mockUser = createMockAdminUser();
+
+      (authApi.getCurrentUser as ReturnType<typeof vi.fn>).mockResolvedValue(
+        mockUser,
+      );
+      (usersApi.listUsers as ReturnType<typeof vi.fn>).mockResolvedValue(
+        createMockUserList(),
+      );
+
+      render(<UsersClient />);
+
+      await waitFor(() => {
+        expect(screen.getByText('John Smith')).toBeInTheDocument();
+      });
+
+      const deleteButton = screen.getAllByRole('button', {
+        name: /^delete$/i,
+      })[0];
+      await user.click(deleteButton);
+
+      await waitFor(() => {
+        expect(screen.getByRole('dialog')).toBeInTheDocument();
+      });
+
+      const confirmInput = screen.getByLabelText(/type the username/i);
+      await user.type(confirmInput, 'wrongname');
+
+      const confirmButton = screen.getByRole('button', {
+        name: /confirm delete/i,
+      });
+      await user.click(confirmButton);
+
+      await waitFor(() => {
+        expect(
+          screen.getByText(/username does not match/i),
+        ).toBeInTheDocument();
+      });
+
+      expect(usersApi.deleteUser).not.toHaveBeenCalled();
+    });
+
+    it('shows error when confirmation field is empty', async () => {
+      const user = userEvent.setup();
+      const mockUser = createMockAdminUser();
+
+      (authApi.getCurrentUser as ReturnType<typeof vi.fn>).mockResolvedValue(
+        mockUser,
+      );
+      (usersApi.listUsers as ReturnType<typeof vi.fn>).mockResolvedValue(
+        createMockUserList(),
+      );
+
+      render(<UsersClient />);
+
+      await waitFor(() => {
+        expect(screen.getByText('John Smith')).toBeInTheDocument();
+      });
+
+      const deleteButton = screen.getAllByRole('button', {
+        name: /^delete$/i,
+      })[0];
+      await user.click(deleteButton);
+
+      await waitFor(() => {
+        expect(screen.getByRole('dialog')).toBeInTheDocument();
+      });
+
+      const confirmButton = screen.getByRole('button', {
+        name: /confirm delete/i,
+      });
+      await user.click(confirmButton);
+
+      await waitFor(() => {
+        expect(
+          screen.getByText(/please type the username to confirm deletion/i),
+        ).toBeInTheDocument();
+      });
+
+      expect(usersApi.deleteUser).not.toHaveBeenCalled();
     });
   });
 

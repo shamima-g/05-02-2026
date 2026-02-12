@@ -32,31 +32,37 @@ User lifecycle management including creation, updates, deactivation, reactivatio
 |  | Dept: Operations  | Username: sjohnson|                | [Edit]      |  |
 |  | Last Login: 2026-01-05 16:45 | Created: 2025-02-10    | [View]      |  |
 |  |                                                        | [Deactivate]|  |
+|  |                                                        | [Delete]    |  |
 |  +------------------------------------------------------------------------+  |
-|  | John Smith        | john.smith@...   | Approver L1    | ✓ Active    |  |
-|  | Dept: Operations  | Username: jsmith |                | [Edit]      |  |
+|  | John Smith        | john.smith@...   | Analyst,       | ✓ Active    |  |
+|  | Dept: Operations  | Username: jsmith | Approver L1    | [Edit]      |  |
 |  | Last Login: 2026-01-05 14:23 | Created: 2025-01-15    | [View]      |  |
 |  |                                                        | [Deactivate]|  |
+|  |                                                        | [Delete]    |  |
 |  +------------------------------------------------------------------------+  |
-|  | Michael Chen      | m.chen@...       | Approver L2    | ✓ Active    |  |
-|  | Dept: Portfolio   | Username: mchen  | (PM)           | [Edit]      |  |
+|  | Jane Williams     | j.williams@...   | Analyst,       | ✓ Active    |  |
+|  | Dept: Operations  | Username: jwilliams| Approver L2   | [Edit]      |  |
 |  | Last Login: 2026-01-05 11:30 | Created: 2025-01-15    | [View]      |  |
 |  |                                                        | [Deactivate]|  |
+|  |                                                        | [Delete]    |  |
 |  +------------------------------------------------------------------------+  |
 |  | Jennifer Lee      | j.lee@...        | Approver L3    | ✓ Active    |  |
 |  | Dept: Executive   | Username: jlee   | (Executive)    | [Edit]      |  |
 |  | Last Login: 2026-01-04 09:15 | Created: 2025-01-15    | [View]      |  |
 |  |                                                        | [Deactivate]|  |
+|  |                                                        | [Delete]    |  |
 |  +------------------------------------------------------------------------+  |
-|  | David Brown       | d.brown@...      | Administrator  | ✓ Active    |  |
-|  | Dept: IT          | Username: dbrown |                | [Edit]      |  |
+|  | David Brown       | d.brown@...      | Administrator, | ✓ Active    |  |
+|  | Dept: IT          | Username: dbrown | Analyst        | [Edit]      |  |
 |  | Last Login: 2026-01-05 08:00 | Created: 2025-01-15    | [View]      |  |
 |  |                                                        | [Deactivate]|  |
+|  |                                                        | [Delete]    |  |
 |  +------------------------------------------------------------------------+  |
 |  | Emily Davis       | e.davis@...      | Analyst        | ⚠ Inactive  |  |
 |  | Dept: Operations  | Username: edavis | (Deactivated)  | [Edit]      |  |
 |  | Last Login: 2025-11-30 | Deactivated: 2025-12-15       | [View]      |  |
 |  | Reason: Left company                                   | [Reactivate]|  |
+|  |                                                        | [Delete]    |  |
 |  +------------------------------------------------------------------------+  |
 |                                                                              |
 |  [1] [2] [3]                                           Rows per page: 10    |
@@ -257,6 +263,32 @@ DEACTIVATE USER MODAL:
 |                                                                              |
 +------------------------------------------------------------------------------+
 
+DELETE USER MODAL:
++------------------------------------------------------------------------------+
+|  Delete User - John Smith                                    [Close ✕]      |
++------------------------------------------------------------------------------+
+|                                                                              |
+|  ⚠ WARNING: This action is permanent and cannot be undone.                  |
+|                                                                              |
+|  Are you sure you want to permanently delete this user?                      |
+|                                                                              |
+|  User: John Smith (jsmith)                                                   |
+|  Email: john.smith@company.com                                               |
+|  Roles: Analyst, Approver Level 1                                            |
+|  Last Login: 2026-01-05 14:23                                                |
+|                                                                              |
+|  ⚠ DELETION WILL:                                                            |
+|  • Permanently remove the user record from the system                        |
+|  • Remove all role assignments                                               |
+|  • This action cannot be reversed                                            |
+|                                                                              |
+|  Type the username "jsmith" to confirm deletion:                             |
+|  [.........................................]                                  |
+|                                                                              |
+|  [Confirm Delete]  [Cancel]                                                  |
+|                                                                              |
++------------------------------------------------------------------------------+
+
 LOGIN ACTIVITY VIEW:
 +------------------------------------------------------------------------------+
 |  Login Activity Report                                          [Close ✕]   |
@@ -297,7 +329,9 @@ LOGIN ACTIVITY VIEW:
 | [Edit] | Link | Modify user details and roles |
 | [View] | Link | View complete user details and activity |
 | [Deactivate] | Link | Deactivate user account (soft delete) |
+| [Delete] | Link | Permanently delete user from the system |
 | [Reactivate] | Link | Restore access for inactive user |
+| Delete Modal | Confirmation Dialog | Username confirmation required for permanent deletion |
 | Add/Edit Modal - Tabbed | Multi-Tab Form | Basic info, roles, contact, security settings |
 | Roles Checklist | Checkbox List | Assign one or more roles with permission descriptions |
 | Backup Approver Selector | Dropdown | Designate backup approvers for continuity |
@@ -312,6 +346,7 @@ LOGIN ACTIVITY VIEW:
 - **Edit User**: Modify user details, roles, or settings
 - **View User Details**: See complete user information and activity
 - **Deactivate User**: Revoke access immediately (soft delete, preserves audit trail)
+- **Delete User**: Permanently remove user from the system (requires username confirmation)
 - **Reactivate User**: Restore access for previously deactivated user
 - **View Login Activity**: See login attempts, successes, failures across all users
 - **Export User List**: Download user list for reporting or auditing
@@ -320,7 +355,8 @@ LOGIN ACTIVITY VIEW:
 
 ## Business Rules
 
-- Users cannot be hard deleted (audit trail requirement)
+- Users can be permanently deleted (hard delete) with username confirmation
+- Deactivation is preferred for audit trail preservation; deletion is for permanent removal
 - User changes fully audited (who, what, when)
 - Deactivated users lose all access immediately
 - User changes take effect in real-time
@@ -374,3 +410,16 @@ When primary approver is unavailable:
 |  Johnson until return date.                                            |
 +------------------------------------------------------------------------+
 ```
+
+## Initial Users (Seed Data)
+
+The system must be pre-configured with the following users:
+
+| User | Roles |
+|------|-------|
+| **Analyst** | Analyst, Approval Level 1 |
+| **Senior Analyst** | Analyst, Approval Level 2 |
+| **Head of Investments** | Approval Level 3 |
+| **Administrator** | Administrator, Analyst |
+
+**Note:** A user can have multiple roles. Permissions are cumulative across all assigned roles.

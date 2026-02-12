@@ -12,6 +12,7 @@ import {
   updateUser,
   deactivateUser,
   reactivateUser,
+  deleteUser,
   getUserActivity,
   updateUserRoles,
   exportUsers,
@@ -84,6 +85,7 @@ export default function UsersClient() {
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [viewModalOpen, setViewModalOpen] = useState(false);
   const [deactivateModalOpen, setDeactivateModalOpen] = useState(false);
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
 
   const [selectedUser, setSelectedUser] = useState<UserDetail | null>(null);
   const [userActivities, setUserActivities] = useState<UserActivityList | null>(
@@ -121,11 +123,18 @@ export default function UsersClient() {
   const [deactivateReason, setDeactivateReason] = useState('');
   const [deactivateErrors, setDeactivateErrors] = useState<string[]>([]);
 
+  const [deleteConfirmUsername, setDeleteConfirmUsername] = useState('');
+  const [deleteErrors, setDeleteErrors] = useState<string[]>([]);
+
   const [searchQuery, setSearchQuery] = useState('');
   const [filterParams, setFilterParams] = useState<Record<string, unknown>>({});
 
   const anyDialogOpen =
-    createModalOpen || editModalOpen || viewModalOpen || deactivateModalOpen;
+    createModalOpen ||
+    editModalOpen ||
+    viewModalOpen ||
+    deactivateModalOpen ||
+    deleteModalOpen;
 
   const fetchUsers = useCallback(async (params?: Record<string, unknown>) => {
     try {
@@ -316,6 +325,47 @@ export default function UsersClient() {
     } catch {
       setOperationError('Failed to reactivate user. Please try again.');
     }
+  };
+
+  const handleDeleteUser = async () => {
+    if (!selectedUser || !currentUser) return;
+
+    if (!deleteConfirmUsername.trim()) {
+      setDeleteErrors(['Please type the username to confirm deletion']);
+      return;
+    }
+
+    if (deleteConfirmUsername !== selectedUser.username) {
+      setDeleteErrors([
+        'Username does not match. Please type the exact username to confirm deletion.',
+      ]);
+      return;
+    }
+
+    setIsSaving(true);
+    setDeleteErrors([]);
+
+    try {
+      await deleteUser(selectedUser.id, currentUser.username);
+      setDeleteModalOpen(false);
+      setDeleteConfirmUsername('');
+      setDeleteErrors([]);
+      await fetchUsers(filterParams);
+    } catch (err: unknown) {
+      const error = err as { message?: string };
+      setDeleteErrors([
+        error.message || 'Failed to delete user. Please try again.',
+      ]);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const openDeleteModal = (user: UserDetail) => {
+    setSelectedUser(user);
+    setDeleteConfirmUsername('');
+    setDeleteErrors([]);
+    setDeleteModalOpen(true);
   };
 
   const handleExport = async () => {
@@ -618,6 +668,14 @@ export default function UsersClient() {
                           Reactivate
                         </Button>
                       )}
+                      <Button
+                        size="sm"
+                        variant="destructive"
+                        onClick={() => openDeleteModal(user)}
+                        aria-label="Delete"
+                      >
+                        Delete
+                      </Button>
                     </div>
                   </TableCell>
                 </TableRow>
@@ -1021,6 +1079,65 @@ export default function UsersClient() {
               disabled={isSaving}
             >
               {isSaving ? 'Deactivating...' : 'Confirm Deactivation'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      {/* Delete User Modal */}
+      <Dialog open={deleteModalOpen} onOpenChange={setDeleteModalOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete User</DialogTitle>
+            <DialogDescription>
+              This action is permanent and cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+
+          {selectedUser && (
+            <div className="space-y-2 text-sm">
+              <p>
+                Are you sure you want to permanently delete{' '}
+                <span className="font-semibold">
+                  {selectedUser.displayName}
+                </span>{' '}
+                ({selectedUser.username})?
+              </p>
+              <p className="text-muted-foreground">
+                Roles: {selectedUser.roles.map((r) => r.name).join(', ')}
+              </p>
+            </div>
+          )}
+
+          {deleteErrors.length > 0 && (
+            <div role="alert" className="text-sm text-destructive space-y-1">
+              {deleteErrors.map((err, i) => (
+                <p key={i}>{err}</p>
+              ))}
+            </div>
+          )}
+
+          <div>
+            <Label htmlFor="delete-confirm-username">
+              Type the username &quot;{selectedUser?.username}&quot; to confirm
+            </Label>
+            <Input
+              id="delete-confirm-username"
+              value={deleteConfirmUsername}
+              onChange={(e) => setDeleteConfirmUsername(e.target.value)}
+              placeholder="Enter username to confirm..."
+            />
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setDeleteModalOpen(false)}>
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handleDeleteUser}
+              disabled={isSaving}
+            >
+              {isSaving ? 'Deleting...' : 'Confirm Delete'}
             </Button>
           </DialogFooter>
         </DialogContent>

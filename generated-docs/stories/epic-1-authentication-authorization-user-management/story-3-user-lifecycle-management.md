@@ -10,7 +10,7 @@
 | **Page Action** | `create_new` |
 
 ## User Story
-**As an** administrator **I want** to create, update, and deactivate user accounts **So that** I can control who has access to the system and maintain accurate user records
+**As an** administrator **I want** to create, edit, and delete user accounts **So that** I can control who has access to the system and maintain accurate user records
 
 ## Acceptance Criteria
 
@@ -65,6 +65,21 @@
 - [ ] Given I am viewing inactive users, when I click "[Reactivate]" for a deactivated user, then the user's account is reactivated and they can log in again
 - [ ] Given I reactivate a user, when I check the user list with "Active Users" filter, then the reactivated user appears in the list with status "✓ Active"
 
+### Delete User
+- [ ] Given I am on the User Administration screen, when I click "[Delete]" for a user, then I see the Delete User confirmation modal with a warning that this action is permanent
+- [ ] Given I am in the Delete User modal, when I type the user's username to confirm and click "[Confirm Delete]", then the user is permanently removed from the system
+- [ ] Given I am in the Delete User modal, when I type an incorrect username and click "[Confirm Delete]", then I see the error message "Username does not match. Please type the exact username to confirm deletion."
+- [ ] Given I am in the Delete User modal, when I leave the confirmation field empty and click "[Confirm Delete]", then I see the error message "Please type the username to confirm deletion"
+- [ ] Given I delete a user, when I check the user list, then the deleted user no longer appears in the list
+
+### Initial Seed Users
+- [ ] Given the system is freshly installed, when I navigate to User Administration, then the following users exist with their assigned roles:
+  - Analyst: Roles = Analyst, Approval Level 1
+  - Senior Analyst: Roles = Analyst, Approval Level 2
+  - Head of Investments: Roles = Approval Level 3
+  - Administrator: Roles = Administrator, Analyst
+- [ ] Given a user has multiple roles, when I view their details, then all assigned roles are displayed and permissions are cumulative
+
 ### Audit Trail (Per BR-SEC-005)
 - [ ] Given I create a new user, when I check the UserActivityLog table, then a record exists with Action="user.created", EntityType="User", and the new user's ID
 - [ ] Given I update a user's email, when I check the audit trail via temporal tables, then I can see the before and after values with timestamp and who made the change
@@ -85,12 +100,14 @@
 | PUT | `/v1/users/{userId}` | Update user information |
 | POST | `/v1/users/{userId}/deactivate` | Deactivate user account |
 | POST | `/v1/users/{userId}/reactivate` | Reactivate user account |
+| DELETE | `/v1/users/{userId}` | Permanently delete user |
 | GET | `/v1/users/{userId}/activity` | Get user activity log |
 | GET | `/v1/users/export` | Export user list to Excel |
 
 ## Implementation Notes
 
-- **Soft Delete**: Users are never hard deleted; deactivation sets `IsActive=false` and preserves audit trail
+- **Soft Delete (Deactivate)**: Deactivation sets `IsActive=false` and preserves audit trail; preferred for most cases
+- **Hard Delete**: Users can be permanently deleted via `DELETE /v1/users/{userId}`; requires username confirmation in UI
 - **Temporal Tables**: SQL Server temporal tables automatically track all changes to User table with before/after values
 - **Segregation of Duties**: System enforces that users cannot approve batches they prepared (checked at approval time, not user creation)
 - **Wireframe Reference**: Screen 14 - User Administration
