@@ -31,21 +31,13 @@ Create new reporting batches, view active batches, switch between reporting peri
 |  +------------------------------------------------------------------------+  |
 |                                                                              |
 |  +------------------------------------------------------------------------+  |
-|  |  BATCH: December 2025                         Status: Data Preparation |  |
+|  |  BATCH: December 2025                                Status: Closed ✓ |  |
 |  +------------------------------------------------------------------------+  |
-|  |  Created: 2025-12-02 by Analyst                                |  |
+|  |  Created: 2025-12-02 | Closed: 2025-12-20                              |  |
 |  |  Reporting Date: 2025-12-31                                            |  |
-|  |  Current Stage: Data Preparation (Correcting after rejection)          |  |
+|  |  Final Approval: 2025-12-20 by Executive                               |  |
 |  |                                                                        |  |
-|  |  Workflow Progress:                                                    |  |
-|  |  [Data Prep ●] → [L1] → [L2] → [L3] → [Publish]                       |  |
-|  |                                                                        |  |
-|  |  Last Rejection: 2025-12-15 by Level 1 Approver                        |  |
-|  |  Rejection Reason: "Missing custodian verification files for ZAR"      |  |
-|  |                                                                        |  |
-|  |  Files: 42/45 received  |  Validation: 12 errors  |  Calcs: Cleared   |  |
-|  |                                                                        |  |
-|  |  [View Details]  [Switch to Batch]  [View Rejection History]          |  |
+|  |  [View Details (Read Only)]  [View Audit Log]  [Export Report]        |  |
 |  +------------------------------------------------------------------------+  |
 |                                                                              |
 |  +------------------------------------------------------------------------+  |
@@ -67,7 +59,7 @@ Create new reporting batches, view active batches, switch between reporting peri
 
 | Element | Type | Description |
 |---------|------|-------------|
-| [+ Create New Batch (Month Year)] | Button | Creates batch for next sequential month (last day). Disabled with tooltip when previous batch is not PendingComplete. Only visible to Analysts. No modal - single click action. |
+| [+ Create New Batch (Month Year)] | Button | Creates batch for next sequential month (last day). Disabled with tooltip when any existing batch is not Approved. Only visible to Analysts. No modal - single click action. |
 | Batch Card | Expandable Panel | Shows summary info with workflow progress, file status, validation status |
 | Workflow Progress | Visual Indicator | Shows stages with completed (✓), current (●), and pending states |
 | Status Badge | Label | Color-coded: Data Prep (blue), Approval stages (yellow), Closed (green) |
@@ -78,7 +70,7 @@ Create new reporting batches, view active batches, switch between reporting peri
 
 ## User Actions
 
-- **Create New Batch**: Single click creates batch for the next sequential month (last day). No modal or date selection. Only available when previous batch is PendingComplete.
+- **Create New Batch**: Single click creates batch for the next sequential month (last day). No modal or date selection. Only available when all existing batches are Approved.
 - **Switch to Batch**: Change active working context to selected batch (affects all screens)
 - **View Details**: See comprehensive batch information including complete workflow history
 - **View Audit Log**: Navigate to audit trail viewer filtered to this batch
@@ -88,9 +80,9 @@ Create new reporting batches, view active batches, switch between reporting peri
 ## Business Rules
 
 - **Monthly only** - weekly batches are de-scoped; only monthly batches are available
-- **Sequential creation** - new batch is always for the next month; no date picker; previous batch must be PendingComplete
-- Users can work on multiple batches simultaneously by switching context
-- Only one batch is "active" at a time (shown in header across all screens)
+- **Sequential creation** - new batch is always for the next month; no date picker; all existing batches must be Approved before a new one can be created
+- Only one batch may be in a non-Approved state at any time (the current batch)
+- Only one batch is "active" at a time (shown in header across all screens); users can switch between batches for viewing
 - Historical batches are read-only (no data modifications allowed)
 - Batch cannot be deleted (soft delete only for audit trail preservation)
 - **Rejection always returns batch to Data Preparation** with rejection reason visible; calculations cleared automatically

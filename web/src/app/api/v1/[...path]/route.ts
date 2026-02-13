@@ -359,7 +359,19 @@ const MOCK_APPROVAL_RULES = [
   { level: 3, rule: 'specific', consensusRequired: null },
 ];
 
-const MOCK_REPORT_BATCHES = [
+const MOCK_REPORT_BATCHES: {
+  id: number;
+  reportBatchType: string;
+  reportDate: string;
+  workflowInstanceId: string;
+  status: string;
+  createdAt: string;
+  createdBy: string;
+  lastRejection: { date: string; level: string; reason: string } | null;
+  fileSummary: { received: number; total: number };
+  validationSummary: { errors: number; warnings: number };
+  calculationStatus: string;
+}[] = [
   {
     id: 1,
     reportBatchType: 'Monthly',
@@ -404,12 +416,12 @@ const MOCK_REPORT_BATCHES = [
     reportBatchType: 'Monthly',
     reportDate: '2025-10-31',
     workflowInstanceId: 'wf-004',
-    status: 'Level3Pending',
+    status: 'Approved',
     createdAt: '2025-10-01T09:00:00Z',
     createdBy: 'Emily Johnson',
     lastRejection: null,
     fileSummary: { received: 5, total: 5 },
-    validationSummary: { errors: 0, warnings: 1 },
+    validationSummary: { errors: 0, warnings: 0 },
     calculationStatus: 'Complete',
   },
   {
@@ -417,17 +429,13 @@ const MOCK_REPORT_BATCHES = [
     reportBatchType: 'Monthly',
     reportDate: '2025-09-30',
     workflowInstanceId: 'wf-005',
-    status: 'DataPreparation',
+    status: 'Approved',
     createdAt: '2025-09-01T09:00:00Z',
     createdBy: 'Emily Johnson',
-    lastRejection: {
-      date: '2025-09-20T14:30:00Z',
-      level: 'Level 2',
-      reason: 'Missing credit ratings for 3 instruments',
-    },
-    fileSummary: { received: 4, total: 5 },
-    validationSummary: { errors: 2, warnings: 5 },
-    calculationStatus: 'Not Started',
+    lastRejection: null,
+    fileSummary: { received: 5, total: 5 },
+    validationSummary: { errors: 0, warnings: 0 },
+    calculationStatus: 'Complete',
   },
 ];
 
@@ -990,6 +998,46 @@ export async function POST(request: NextRequest) {
     seg[2] === 'backup'
   ) {
     return new NextResponse(null, { status: 204 });
+  }
+
+  // POST /report-batches
+  if (path === 'report-batches') {
+    const incompleteBatches = MOCK_REPORT_BATCHES.filter(
+      (b) => b.status !== 'Approved',
+    );
+    if (incompleteBatches.length > 0) {
+      return json(
+        {
+          message:
+            'Cannot create a new batch: all existing batches must be in Approved status',
+          incompleteBatches: incompleteBatches.map((b) => ({
+            id: b.id,
+            reportDate: b.reportDate,
+            status: b.status,
+          })),
+        },
+        409,
+      );
+    }
+
+    const newId =
+      MOCK_REPORT_BATCHES.reduce((max, b) => Math.max(max, b.id), 0) + 1;
+    const newBatch = {
+      id: newId,
+      reportBatchType: (body.reportBatchType as string) || 'Monthly',
+      reportDate: body.reportDate as string,
+      workflowInstanceId: `wf-${String(newId).padStart(3, '0')}`,
+      status: 'DataPreparation',
+      createdAt: new Date().toISOString(),
+      createdBy: getUserFromToken(request)?.displayName || 'Unknown',
+      lastRejection: null,
+      fileSummary: { received: 0, total: 5 },
+      validationSummary: { errors: 0, warnings: 0 },
+      calculationStatus: 'Not Started',
+    };
+
+    MOCK_REPORT_BATCHES.unshift(newBatch);
+    return json(newBatch, 201);
   }
 
   // POST /v1/batches (for Story 7 operation permissions)

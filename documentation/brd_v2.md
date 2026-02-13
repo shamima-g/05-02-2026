@@ -248,7 +248,7 @@ The InvestInsight platform provides the following business capabilities:
 - Data corrections require recalculation (calculations must clear upon rejection)
 - Three-level approval hierarchy cannot be bypassed or reordered
 - All workflow state transitions must be auditable with user attribution and timestamps
-- Multiple batches can be active simultaneously with distinct reporting dates
+- Only one batch may be in a non-Approved state at any time; all previous batches must be Approved before a new batch can be created
 
 **Priority**: CRITICAL
 **Rationale**: Structured workflow with validation gates ensures data quality, appropriate oversight, and accountability for published financial reports
@@ -279,19 +279,21 @@ The InvestInsight platform provides the following business capabilities:
 ---
 
 **BR-GOV-006: Batch Management**
-**Business Need**: Support parallel processing of different reporting periods
+**Business Need**: Enforce sequential completion of reporting periods to maintain data integrity
 
-**Requirement**: The solution must support multiple active batches with distinct reporting dates, ability to work on current month while correcting prior months, clear identification of which batch is current, and historical batch access for reference.
+**Requirement**: The solution must enforce that only one batch can be in a non-Approved (in-progress) state at any time. All previous batches must reach Approved status before a new batch can be created. Historical (Approved) batches are accessible in read-only mode for reference.
 
 **Business Rules**:
 - Each batch has unique identifier and reporting date
-- Historical batches accessible in read-only mode
+- Only one batch may be in a non-Approved state at any time (the current batch)
+- All existing batches must be in Approved status before a new batch can be created
+- Historical (Approved) batches accessible in read-only mode
 - No limit on number of historical batches retained (subject to data retention policy)
 - Batch creation initiates workflow in data preparation state
-- Users can switch between active batches without data loss
+- Users can switch between batches for viewing, but only the current (non-Approved) batch is editable
 
 **Priority**: HIGH
-**Rationale**: Operations require flexibility to correct prior periods while progressing current reporting; supports continuous improvement and error correction
+**Rationale**: Sequential completion ensures each reporting period is fully reviewed and approved before the next begins, maintaining audit integrity and preventing abandoned incomplete batches
 
 ---
 

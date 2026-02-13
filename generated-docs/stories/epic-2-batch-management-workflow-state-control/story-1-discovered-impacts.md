@@ -387,8 +387,8 @@ web/src/components/batches/__tests__/CreateBatchButton.test.tsx (component tests
 **Create Button Tests:**
 - ✅ Visible for Analysts
 - ✅ Hidden for Approvers/Admins
-- ✅ Disabled when previous batch NOT PendingComplete (with tooltip)
-- ✅ Enabled when previous batch IS PendingComplete
+- ✅ Disabled when any existing batch is NOT Approved (with tooltip)
+- ✅ Enabled when all existing batches are Approved
 - ✅ Creates batch for next month (last day) on click
 
 **Batch List Tests:**

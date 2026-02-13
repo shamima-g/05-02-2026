@@ -21,7 +21,7 @@
 - [ ] Given data is confirmed, when I attempt to upload a file or modify master data, then the action is blocked with message "Batch is locked for approval. Cannot modify data."
 
 ### Validation Before Confirmation
-- [ ] Given I try to confirm a batch with missing required files, when I click "Confirm Data Ready", then I see error message "Cannot confirm: 3 required files are missing. Please upload all files before confirming." and the confirmation is blocked
+- [ ] Given I try to confirm a batch with missing required files, when I click "Confirm Data Ready", then I see warning dialog "3 required files are missing. Are you sure you want to proceed?" with options to "Review Issues" or "Proceed Anyway" (confirmation is NOT blocked)
 - [ ] Given I try to confirm a batch with validation errors, when I click "Confirm Data Ready", then I see warning dialog "12 validation errors exist. Are you sure you want to proceed?" with options to "Review Errors" or "Proceed Anyway"
 - [ ] Given validation warnings exist (not errors), when I click "Confirm Data Ready", then I see info message "3 validation warnings exist. These will be documented for approvers." and confirmation proceeds
 

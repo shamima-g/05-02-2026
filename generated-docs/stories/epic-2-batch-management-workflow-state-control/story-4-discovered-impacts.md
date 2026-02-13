@@ -136,9 +136,10 @@ export async function confirmBatch(id: number): Promise<ReportBatch> {
 
 **Implications for Story 4:**
 - Before showing confirmation dialog, fetch validation summary
-- If `fileCompleteness.received < fileCompleteness.expected`, block confirmation with error message
-- If validation errors exist (e.g., `fileCompleteness.failed > 0`), show warning dialog
-- If validation warnings exist (e.g., `referenceDataCompleteness.instrumentsMissingRatings > 0`), show info message but allow confirmation
+- If `fileCompleteness.received < fileCompleteness.expected`, show warning in dialog (non-blocking per BR-VALID-003)
+- If validation errors exist (e.g., `fileCompleteness.failed > 0`), show warning in dialog (non-blocking)
+- If validation warnings exist (e.g., `referenceDataCompleteness.instrumentsMissingRatings > 0`), show info message in dialog
+- All validation issues are warnings only - user can always proceed with confirmation
 
 ---
 
@@ -317,7 +318,7 @@ mcp__shadcn__add_component({ component_names: ['alert-dialog'] })
 
 **Required Functionality:**
 1. Fetch validation summary before opening dialog
-2. If validation fails (missing files), show error and block confirmation
+2. If validation issues exist (missing files, errors), show warnings in dialog (non-blocking)
 3. If validation warnings exist, show warning dialog with "Review Errors" or "Proceed Anyway" options
 4. Show confirmation dialog: "This will lock all data entry and initiate calculations. Continue?"
 5. On confirm, call `confirmBatch(batchId)` API
@@ -350,27 +351,8 @@ export function ConfirmDataButton({ batchId, batchName, onConfirmSuccess }: Conf
       const validation = await getBatchValidation(batchId);
       setValidationResult(validation);
 
-      // 2. Check for blocking errors (missing files)
-      const missingFiles = validation.fileCompleteness.expected - validation.fileCompleteness.received;
-      if (missingFiles > 0) {
-        showToast({
-          title: 'Cannot confirm',
-          message: `${missingFiles} required files are missing. Please upload all files before confirming.`,
-          variant: 'error',
-        });
-        setIsLoading(false);
-        return;
-      }
-
-      // 3. Check for validation errors
-      if (validation.fileCompleteness.failed > 0) {
-        // Show warning dialog (user can proceed or review errors)
-        setDialogOpen(true);
-        setIsLoading(false);
-        return;
-      }
-
-      // 4. No errors - show confirmation dialog
+      // 2. Always open dialog - validation issues are warnings, not blockers
+      // Missing files, validation errors, and warnings are all non-blocking
       setDialogOpen(true);
       setIsLoading(false);
     } catch (error) {
@@ -695,7 +677,7 @@ interface CurrentStagePanelProps {
 - ✅ **Data entry is blocked** → `isReadOnlyStatus()` returns true for all non-DataPreparation statuses
 
 ### AC: Validation Before Confirmation
-- ✅ **Missing files block confirmation** → Fetch `getBatchValidation()`, check `fileCompleteness.expected - received`, show error if > 0
+- ✅ **Missing files show warning (non-blocking)** → Fetch `getBatchValidation()`, check `fileCompleteness.expected - received`, show warning dialog with "Review Issues" or "Proceed Anyway" (user can always confirm)
 - ✅ **Validation errors show warning dialog** → Check `fileCompleteness.failed > 0`, show warning with "Review Errors" or "Proceed Anyway"
 - ✅ **Validation warnings allow confirmation** → Check `referenceDataCompleteness` fields, show info message but allow confirmation
 
@@ -745,12 +727,12 @@ interface CurrentStagePanelProps {
 - ✅ Refreshes batch context via `switchBatch()` after confirmation
 
 #### Validation Checks
-- ✅ Shows error toast when files are missing (expected > received)
-- ✅ Does NOT open dialog when files are missing
-- ✅ Shows warning dialog when validation errors exist (failed > 0)
-- ✅ Warning dialog shows "Review Errors" and "Proceed Anyway" buttons
-- ✅ "Review Errors" button closes dialog without confirming
-- ✅ "Proceed Anyway" button proceeds with confirmation despite errors
+- ✅ Shows warning in dialog when files are missing (expected > received) - non-blocking
+- ✅ Dialog still opens when files are missing (user can proceed)
+- ✅ Shows warning in dialog when validation errors exist (failed > 0)
+- ✅ Warning dialog shows "Review Issues" and "Proceed Anyway" buttons
+- ✅ "Review Issues" button closes dialog without confirming
+- ✅ "Proceed Anyway" button proceeds with confirmation despite issues
 - ✅ Shows info message when validation warnings exist (non-blocking)
 
 #### Loading States
@@ -940,9 +922,9 @@ Before transitioning to SPECIFY phase, verify:
 
    **Recommendation:** Add lock icon to batch cards and batch detail header. CurrentStagePanel status message is sufficient.
 
-2. **Validation warnings vs errors:** How to distinguish blocking errors (missing files) from non-blocking warnings (missing reference data)?
+2. **Validation warnings vs errors:** How to distinguish severity levels for display in the confirmation dialog?
 
-   **API Schema Analysis:** `fileCompleteness.failed` counts invalid/failed files (blocking). `referenceDataCompleteness` counts missing reference data (non-blocking warnings). Use `failed > 0` for blocking errors.
+   **API Schema Analysis:** `fileCompleteness.failed` counts invalid/failed files (shown as warnings). `referenceDataCompleteness` counts missing reference data (shown as info). Per BR-VALID-003, all validation issues are non-blocking - user can always proceed with confirmation.
 
 3. **Re-confirmation dialog message:** Should re-confirmation after rejection show different message than initial confirmation?
 

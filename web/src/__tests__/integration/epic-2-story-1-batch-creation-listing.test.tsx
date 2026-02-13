@@ -460,8 +460,50 @@ describe('Batches Page', () => {
 
       await waitFor(() => {
         expect(
-          screen.getByText(/previous batch must reach Approved status first/i),
+          screen.getByText(
+            /all existing batches must be Approved before creating a new one/i,
+          ),
         ).toBeInTheDocument();
+      });
+    });
+
+    it('disables Create New Batch button when any batch is not Approved, even if the most recent one is', async () => {
+      const mockUser = createMockUser();
+      (authApi.getCurrentUser as ReturnType<typeof vi.fn>).mockResolvedValue(
+        mockUser,
+      );
+      (
+        batchesApi.listReportBatches as ReturnType<typeof vi.fn>
+      ).mockResolvedValue(
+        createMockBatchList([
+          createMockBatch({
+            id: 3,
+            reportDate: '2026-01-31',
+            createdAt: '2026-01-15T10:00:00Z',
+            status: 'Approved',
+          }),
+          createMockBatch({
+            id: 2,
+            reportDate: '2025-12-31',
+            createdAt: '2025-12-01T10:00:00Z',
+            status: 'Level2Pending',
+          }),
+          createMockBatch({
+            id: 1,
+            reportDate: '2025-11-30',
+            createdAt: '2025-11-01T10:00:00Z',
+            status: 'Approved',
+          }),
+        ]),
+      );
+
+      render(<BatchesPage />);
+
+      await waitFor(() => {
+        const createButton = screen.getByRole('button', {
+          name: /Create New Batch/i,
+        });
+        expect(createButton).toBeDisabled();
       });
     });
   });

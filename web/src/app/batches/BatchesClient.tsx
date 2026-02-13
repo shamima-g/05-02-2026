@@ -217,11 +217,7 @@ export default function BatchesClient() {
 
   const isCreateButtonDisabled = (): boolean => {
     if (batches.length === 0) return false;
-    const sortedByCreated = [...batches].sort(
-      (a, b) =>
-        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
-    );
-    return sortedByCreated[0]?.status !== 'Approved';
+    return batches.some((b) => b.status !== 'Approved');
   };
 
   const handleCreateBatch = async () => {
@@ -291,7 +287,8 @@ export default function BatchesClient() {
               </Button>
               {buttonDisabled && showTooltip && (
                 <div className="absolute z-50 bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 text-sm text-white bg-gray-900 rounded-md whitespace-nowrap">
-                  Previous batch must reach Approved status first
+                  All existing batches must be Approved before creating a new
+                  one
                 </div>
               )}
             </div>

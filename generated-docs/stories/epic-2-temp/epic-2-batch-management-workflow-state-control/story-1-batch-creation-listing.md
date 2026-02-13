@@ -15,10 +15,11 @@
 ## Acceptance Criteria
 
 ### Happy Path - Create Batch
-- [ ] Given I am on the Batch Management page, when I click "Create New Batch", then a modal opens with fields for Report Type (Monthly/Weekly) and Reporting Date
-- [ ] Given the Create Batch modal is open, when I select "Monthly" as type and "2026-01-31" as reporting date and click Create, then a new batch is created with status "Data Preparation" and I see a success message "Batch January 2026 created successfully"
+- [ ] Given I am on the Batch Management page, when I click "Create New Batch", then a new monthly batch is created for the next month (last day of the month) with status "Data Preparation" and I see a success message (e.g., "Batch February 2026 created successfully")
+- [ ] Given all existing batches are in status "Approved" or no batches exist, when I click "Create New Batch", then the batch is created successfully for the next sequential month
+- [ ] Given any existing batch is NOT in status "Approved", when I view the page, then the "Create New Batch" button is disabled with a tooltip explaining all existing batches must be Approved before creating a new one
 - [ ] Given a new batch is created, when I view the batch list, then the new batch appears at the top with status badge "Data Preparation" (blue color)
-- [ ] Given a new batch is created, when I check the database, then it has a unique ID, reportDate, reportBatchType=Monthly, status=DataPreparation, and workflowInstanceId is null
+- [ ] Given a new batch is created, when I check the database, then it has a unique ID, reportDate (last day of the next sequential month), reportBatchType=Monthly, status=DataPreparation, and workflowInstanceId is null
 
 ### Happy Path - View Batches
 - [ ] Given I am on the Batch Management page, when the page loads, then I see all batches I have permission to view sorted by latest first
@@ -32,12 +33,13 @@
 - [ ] Given I am viewing batches, when I change the sort dropdown to "Oldest First", then batches are re-sorted by creation date ascending
 
 ### Rejection Visibility
-- [ ] Given a batch was rejected at Level 1, when I view its card, then I see a prominent alert box showing "Last Rejection: 2025-12-15 by Level 1 Approver" and the rejection reason
-- [ ] Given a rejected batch, when I view its status, then it shows "Data Preparation (Correcting after rejection)" and calculations show "Cleared"
+- [ ] Given a batch was rejected at any approval level, when the rejection occurs, then the batch automatically returns to "Data Preparation" status with the rejection reason visible on the batch card
+- [ ] Given a rejected batch, when I view its card, then I see a prominent alert box showing the last rejection details (date, approver level, reason) and status shows "Data Preparation (Correcting after rejection)" with calculations cleared
+- [ ] Given a batch has been rejected, when the analyst fixes the data and resubmits, then the batch progresses through approvals again until it eventually reaches a complete status (batches never remain in a "Rejected" end state)
 
-### Validation - Duplicate Prevention
-- [ ] Given a Monthly batch already exists for reporting date 2026-01-31, when I try to create another Monthly batch for the same date, then I see the error message "A Monthly batch already exists for this reporting date"
-- [ ] Given I open the Create Batch modal, when I leave the Reporting Date field empty and click Create, then I see the error message "Reporting date is required"
+### Validation - Sequential Batch Creation
+- [ ] Given all existing batches are in Approved status (including January 2026), when I click "Create New Batch", then a batch for February 2026 (reporting date 2026-02-28) is created automatically
+- [ ] Given any existing batch is NOT in Approved status, when I attempt to create a new batch, then the action is prevented and I see a message explaining all existing batches must be Approved first
 
 ### Pagination
 - [ ] Given more than 10 batches exist, when I view the Batch Management page, then I see the first 10 batches and a "Load More" button
@@ -62,14 +64,15 @@
 - **Component Structure**:
   - `app/batches/page.tsx` - Main batch list page (server component)
   - `components/batches/BatchList.tsx` - Client component for batch cards
-  - `components/batches/CreateBatchModal.tsx` - Client component for batch creation
   - `components/batches/BatchCard.tsx` - Reusable batch display card
   - `components/batches/WorkflowProgress.tsx` - Visual workflow progress indicator
+- **Batch Creation**: No modal needed - single button click creates batch for next sequential month (last day). Button disabled when any existing batch is not Approved.
+- **Batch Type**: Monthly only (weekly batches de-scoped)
 - **API Client**: Create `lib/api/batches.ts` with functions: `listBatches()`, `createBatch()`, `getBatch()`, `getBatchStatus()`
 - **State Management**: Use React state for filter/sort controls; server-side filtering preferred when possible
 - **Wireframe Reference**: Screen 2 - Batch Management
 - **BRD Requirements**: BR-GOV-006 (Batch Management), BR-GOV-004 (Monthly Reporting Workflow)
-- **Shadcn Components**: Dialog (modal), Button, Card, Badge, Select (filters/sort)
+- **Shadcn Components**: Button, Card, Badge, Select (filters/sort), Tooltip (disabled button explanation)
 - **Date Formatting**: Use `date-fns` for date display formatting (e.g., "January 2026")
 - **Status Color Coding**:
   - Data Preparation: Blue
@@ -82,4 +85,4 @@
 - Epic 1 Story 4 (Role Assignment) - permissions check for Create button visibility
 
 ## Story Points
-**8** - Involves new page creation, modal, API integration, filtering/sorting logic, and complex batch card display with workflow visualization
+**8** - Involves new page creation, API integration, filtering/sorting logic, sequential batch creation logic, and complex batch card display with workflow visualization

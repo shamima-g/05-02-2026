@@ -16,8 +16,8 @@
 
 ### Happy Path - Create Batch
 - [ ] Given I am on the Batch Management page, when I click "Create New Batch", then a new monthly batch is created for the next month (last day of the month) with status "Data Preparation" and I see a success message (e.g., "Batch February 2026 created successfully")
-- [ ] Given the most recent batch is in status "PendingComplete" or no batches exist, when I click "Create New Batch", then the batch is created successfully for the next sequential month
-- [ ] Given the most recent batch is NOT in status "PendingComplete", when I view the page, then the "Create New Batch" button is disabled with a tooltip explaining the previous batch must reach PendingComplete status first
+- [ ] Given all existing batches are in status "Approved" or no batches exist, when I click "Create New Batch", then the batch is created successfully for the next sequential month
+- [ ] Given any existing batch is NOT in status "Approved", when I view the page, then the "Create New Batch" button is disabled with a tooltip explaining all existing batches must be Approved before creating a new one
 - [ ] Given a new batch is created, when I view the batch list, then the new batch appears at the top with status badge "Data Preparation" (blue color)
 - [ ] Given a new batch is created, when I check the database, then it has a unique ID, reportDate (last day of the next sequential month), reportBatchType=Monthly, status=DataPreparation, and workflowInstanceId is null
 
@@ -38,8 +38,8 @@
 - [ ] Given a batch has been rejected, when the analyst fixes the data and resubmits, then the batch progresses through approvals again until it eventually reaches a complete status (batches never remain in a "Rejected" end state)
 
 ### Validation - Sequential Batch Creation
-- [ ] Given the most recent batch is for January 2026 and is in PendingComplete status, when I click "Create New Batch", then a batch for February 2026 (reporting date 2026-02-28) is created automatically
-- [ ] Given the most recent batch is NOT in PendingComplete status, when I attempt to create a new batch, then the action is prevented and I see a message explaining the previous batch must be completed first
+- [ ] Given all existing batches are in Approved status (including January 2026), when I click "Create New Batch", then a batch for February 2026 (reporting date 2026-02-28) is created automatically
+- [ ] Given any existing batch is NOT in Approved status, when I attempt to create a new batch, then the action is prevented and I see a message explaining all existing batches must be Approved first
 
 ### Pagination
 - [ ] Given more than 10 batches exist, when I view the Batch Management page, then I see the first 10 batches and a "Load More" button
@@ -66,7 +66,7 @@
   - `components/batches/BatchList.tsx` - Client component for batch cards
   - `components/batches/BatchCard.tsx` - Reusable batch display card
   - `components/batches/WorkflowProgress.tsx` - Visual workflow progress indicator
-- **Batch Creation**: No modal needed - single button click creates batch for next sequential month (last day). Button disabled when previous batch is not PendingComplete.
+- **Batch Creation**: No modal needed - single button click creates batch for next sequential month (last day). Button disabled when any existing batch is not Approved.
 - **Batch Type**: Monthly only (weekly batches de-scoped)
 - **API Client**: Create `lib/api/batches.ts` with functions: `listBatches()`, `createBatch()`, `getBatch()`, `getBatchStatus()`
 - **State Management**: Use React state for filter/sort controls; server-side filtering preferred when possible
