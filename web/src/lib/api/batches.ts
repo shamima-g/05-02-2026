@@ -120,6 +120,48 @@ export async function getBatchWorkflowStatus(
 }
 
 /**
+ * Get validation summary for a report batch.
+ */
+export interface BatchValidationResult {
+  isComplete: boolean;
+  fileCompleteness: {
+    expected: number;
+    received: number;
+    valid: number;
+    failed: number;
+  };
+  portfolioDataCompleteness: Array<{
+    portfolioId: number;
+    portfolioName: string;
+    holdings: boolean;
+    transactions: boolean;
+    income: boolean;
+    cash: boolean;
+    performance: boolean;
+  }>;
+  referenceDataCompleteness: {
+    instrumentsMissingRatings: number;
+    instrumentsMissingDurations: number;
+    instrumentsMissingBetas: number;
+    missingIndexPrices: number;
+  };
+}
+
+export async function getBatchValidation(
+  id: number,
+): Promise<BatchValidationResult> {
+  return get<BatchValidationResult>(`/report-batches/${id}/validation`);
+}
+
+/**
+ * Confirm a batch is ready for calculation.
+ * Requires 'batch.confirm' permission.
+ */
+export async function confirmBatch(id: number): Promise<ReportBatch> {
+  return post<ReportBatch>(`/report-batches/${id}/confirm`, {});
+}
+
+/**
  * Legacy batch creation interface (Epic 1 compatibility).
  */
 export interface CreateBatchRequest {

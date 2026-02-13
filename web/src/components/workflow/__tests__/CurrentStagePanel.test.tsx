@@ -12,6 +12,12 @@ import { CurrentStagePanel } from '@/components/workflow/CurrentStagePanel';
 vi.mock('@/lib/utils/date-formatting', () => ({
   formatDateTime: vi.fn((dateStr: string) => 'Jan 6, 2026 at 11:30 AM'),
   formatRelativeTime: vi.fn((dateStr: string) => '2 days ago'),
+  formatReportDate: vi.fn((dateStr: string) => 'January 2026'),
+}));
+
+// Mock ConfirmDataButton component
+vi.mock('@/components/batches/ConfirmDataButton', () => ({
+  ConfirmDataButton: () => <button>Confirm Data Ready</button>,
 }));
 
 describe('CurrentStagePanel', () => {
@@ -24,6 +30,7 @@ describe('CurrentStagePanel', () => {
           lastUpdated="2026-01-06T11:30:00Z"
           isLocked={false}
           canConfirm={false}
+          reportDate="2026-01-31"
         />,
       );
 
@@ -38,6 +45,7 @@ describe('CurrentStagePanel', () => {
           lastUpdated="2026-01-05T09:00:00Z"
           isLocked={false}
           canConfirm={true}
+          reportDate="2026-01-31"
         />,
       );
 
@@ -56,6 +64,7 @@ describe('CurrentStagePanel', () => {
           lastUpdated="2026-01-06T10:00:00Z"
           isLocked={true}
           canConfirm={false}
+          reportDate="2026-01-31"
         />,
       );
 
@@ -72,6 +81,7 @@ describe('CurrentStagePanel', () => {
           lastUpdated="2026-01-06T11:30:00Z"
           isLocked={true}
           canConfirm={false}
+          reportDate="2026-01-31"
         />,
       );
 
@@ -88,6 +98,7 @@ describe('CurrentStagePanel', () => {
           lastUpdated="2026-01-06T14:00:00Z"
           isLocked={true}
           canConfirm={false}
+          reportDate="2026-01-31"
         />,
       );
 
@@ -106,6 +117,7 @@ describe('CurrentStagePanel', () => {
           lastUpdated="2026-01-06T11:30:00Z"
           isLocked={true}
           canConfirm={false}
+          reportDate="2026-01-31"
         />,
       );
 
@@ -122,6 +134,7 @@ describe('CurrentStagePanel', () => {
           lastUpdated="2026-01-05T09:00:00Z"
           isLocked={false}
           canConfirm={true}
+          reportDate="2026-01-31"
         />,
       );
 
@@ -138,6 +151,7 @@ describe('CurrentStagePanel', () => {
           lastUpdated="2026-01-06T10:00:00Z"
           isLocked={true}
           canConfirm={false}
+          reportDate="2026-01-31"
         />,
       );
 
@@ -154,6 +168,7 @@ describe('CurrentStagePanel', () => {
           lastUpdated="2026-01-06T14:00:00Z"
           isLocked={true}
           canConfirm={false}
+          reportDate="2026-01-31"
         />,
       );
 
@@ -172,6 +187,7 @@ describe('CurrentStagePanel', () => {
           lastUpdated="2026-01-05T09:00:00Z"
           isLocked={false}
           canConfirm={true}
+          reportDate="2026-01-31"
         />,
       );
 
@@ -188,6 +204,7 @@ describe('CurrentStagePanel', () => {
           lastUpdated="2026-01-06T10:00:00Z"
           isLocked={true}
           canConfirm={false}
+          reportDate="2026-01-31"
         />,
       );
 
@@ -204,6 +221,7 @@ describe('CurrentStagePanel', () => {
           lastUpdated="2026-01-06T11:30:00Z"
           isLocked={true}
           canConfirm={false}
+          reportDate="2026-01-31"
         />,
       );
 
@@ -220,6 +238,7 @@ describe('CurrentStagePanel', () => {
           lastUpdated="2026-01-06T14:00:00Z"
           isLocked={true}
           canConfirm={false}
+          reportDate="2026-01-31"
         />,
       );
 
@@ -236,6 +255,7 @@ describe('CurrentStagePanel', () => {
           lastUpdated="2026-01-07T10:00:00Z"
           isLocked={true}
           canConfirm={false}
+          reportDate="2026-01-31"
         />,
       );
 
@@ -252,6 +272,7 @@ describe('CurrentStagePanel', () => {
           lastUpdated="2026-01-21T09:00:00Z"
           isLocked={false}
           canConfirm={true}
+          reportDate="2026-01-31"
           lastRejection={{
             date: '2026-01-20T14:30:00Z',
             level: 'Level 2',
@@ -277,6 +298,7 @@ describe('CurrentStagePanel', () => {
           lastUpdated="2026-01-21T09:00:00Z"
           isLocked={false}
           canConfirm={true}
+          reportDate="2026-01-31"
           lastRejection={{
             date: '2026-01-20T14:30:00Z',
             level: 'Level 1',
@@ -297,6 +319,7 @@ describe('CurrentStagePanel', () => {
           lastUpdated="2026-01-05T09:00:00Z"
           isLocked={false}
           canConfirm={true}
+          reportDate="2026-01-31"
         />,
       );
 
@@ -313,6 +336,7 @@ describe('CurrentStagePanel', () => {
           lastUpdated="2026-01-05T09:00:00Z"
           isLocked={false}
           canConfirm={true}
+          reportDate="2026-01-31"
         />,
       );
 
@@ -329,6 +353,7 @@ describe('CurrentStagePanel', () => {
           lastUpdated="2026-01-06T11:30:00Z"
           isLocked={true}
           canConfirm={false}
+          reportDate="2026-01-31"
         />,
       );
 
@@ -345,6 +370,7 @@ describe('CurrentStagePanel', () => {
           lastUpdated="2026-01-06T11:30:00Z"
           isLocked={true}
           canConfirm={false}
+          reportDate="2026-01-31"
         />,
       );
 
@@ -363,6 +389,7 @@ describe('CurrentStagePanel', () => {
           lastUpdated="2026-01-05T09:00:00Z"
           isLocked={false}
           canConfirm={true}
+          reportDate="2026-01-31"
         />,
       );
 
@@ -382,6 +409,7 @@ describe('CurrentStagePanel', () => {
           lastUpdated="2026-01-06T11:30:00Z"
           isLocked={true}
           canConfirm={false}
+          reportDate="2026-01-31"
         />,
       );
 
@@ -396,6 +424,7 @@ describe('CurrentStagePanel', () => {
           lastUpdated="2026-01-06T11:30:00Z"
           isLocked={true}
           canConfirm={false}
+          reportDate="2026-01-31"
         />,
       );
 

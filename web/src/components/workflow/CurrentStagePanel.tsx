@@ -20,7 +20,9 @@ import { getStageConfig, getNextStage } from '@/lib/constants/workflow-stages';
 import {
   formatDateTime,
   formatRelativeTime,
+  formatReportDate,
 } from '@/lib/utils/date-formatting';
+import { ConfirmDataButton } from '@/components/batches/ConfirmDataButton';
 
 interface CurrentStagePanelProps {
   batchId: number;
@@ -29,6 +31,7 @@ interface CurrentStagePanelProps {
   isLocked?: boolean;
   canConfirm: boolean;
   lastRejection?: { level: string; reason: string; date: string } | null;
+  reportDate: string;
 }
 
 export function CurrentStagePanel({
@@ -37,6 +40,7 @@ export function CurrentStagePanel({
   lastUpdated,
   canConfirm,
   lastRejection,
+  reportDate,
 }: CurrentStagePanelProps) {
   const stageConfig = getStageConfig(currentStage);
   const nextStage = getNextStage(currentStage);
@@ -100,7 +104,12 @@ export function CurrentStagePanel({
         )}
 
         <div className="flex gap-2">
-          {canConfirm && <Button>Confirm Data Ready</Button>}
+          {canConfirm && (
+            <ConfirmDataButton
+              batchId={batchId}
+              batchName={formatReportDate(reportDate)}
+            />
+          )}
           <Button variant="outline" asChild>
             <Link href={`/batches/${batchId}`}>View Batch Details</Link>
           </Button>

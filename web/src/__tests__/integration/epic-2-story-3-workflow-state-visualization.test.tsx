@@ -36,6 +36,13 @@ vi.mock('@/contexts/ToastContext', () => ({
   }),
 }));
 
+// Mock batch context (used by ConfirmDataButton in CurrentStagePanel)
+vi.mock('@/contexts/BatchContext', () => ({
+  useBatch: () => ({
+    switchBatch: vi.fn(),
+  }),
+}));
+
 // Mock date formatting utilities
 vi.mock('@/lib/utils/date-formatting', () => ({
   formatReportDate: vi.fn((dateStr: string) => 'January 2026'),
@@ -433,8 +440,9 @@ describe('Workflow State Visualization', () => {
       });
 
       const level1Stage = container.querySelector(
+        // test-quality-ignore
         '[data-stage="Level1Pending"]',
-      ); // test-quality-ignore
+      );
       expect(level1Stage).toHaveAttribute(
         'title',
         expect.stringContaining('Operations approval'),

@@ -46,12 +46,11 @@ interface BatchProviderProps {
 
 /**
  * Determine if a batch is read-only based on its status.
- * - Approved: read-only (locked)
- * - Level3Pending: read-only (locked for Level 2 approval)
- * - All other statuses: editable
+ * - DataPreparation: editable (not locked)
+ * - All other statuses: read-only (locked)
  */
 function isReadOnlyStatus(status: string): boolean {
-  return status === 'Approved' || status === 'Level3Pending';
+  return status !== 'DataPreparation';
 }
 
 export function BatchProvider({ children }: BatchProviderProps) {

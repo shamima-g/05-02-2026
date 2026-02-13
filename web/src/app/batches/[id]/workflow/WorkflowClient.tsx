@@ -139,6 +139,7 @@ export default function WorkflowClient({ batchId }: WorkflowClientProps) {
         lastUpdated={workflowStatus.lastUpdated}
         canConfirm={workflowStatus.canConfirm}
         lastRejection={batch.lastRejection}
+        reportDate={batch.reportDate}
       />
     </div>
   );
