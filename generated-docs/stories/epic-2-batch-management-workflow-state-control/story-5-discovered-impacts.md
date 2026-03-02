@@ -669,11 +669,9 @@ export function DataEntryPage() {
 
 ### AC: Multi-Batch Scenarios
 
-- ✅ **Lock is batch-specific** → Each batch has its own status
-- ✅ **Switching batches updates lock state** → BatchContext refetches batch on switch
-- ✅ **Other users' actions don't affect my batch** → Batches are independent
+> **Not applicable.** Per BR-GOV-006, only one batch may be in a non-Approved state at any time. The previous batch must be Approved before a new batch can be created. Multiple non-complete batches cannot exist simultaneously. Historical (Approved) batches are accessible in read-only mode only.
 
-**Status:** Already works correctly.
+**Status:** N/A - removed from acceptance criteria.
 
 ---
 

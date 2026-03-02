@@ -183,7 +183,7 @@ describe('BatchSwitcher', () => {
       );
 
       await waitFor(() => {
-        expect(screen.getByText(/read-only/i)).toBeInTheDocument();
+        expect(screen.getByLabelText('Locked')).toBeInTheDocument();
       });
     });
 

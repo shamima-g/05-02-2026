@@ -352,7 +352,7 @@ describe('Epic 2 Story 2: Batch Context Switching - AppHeader Integration', () =
 
       await waitFor(() => {
         expect(screen.getByText(/January 2026/i)).toBeInTheDocument();
-        expect(screen.getByText(/read-only/i)).toBeInTheDocument();
+        expect(screen.getByLabelText('Locked')).toBeInTheDocument();
       });
     });
 

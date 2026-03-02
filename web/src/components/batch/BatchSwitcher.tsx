@@ -3,18 +3,24 @@
 /**
  * BatchSwitcher - Global batch selection dropdown for header
  *
- * Shows active batch name, status, and read-only indicator.
+ * Shows active batch name, status, and lock indicator icon.
  * Provides quick-switch dropdown with recent batches.
  */
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { ChevronDown, Loader2 } from 'lucide-react';
+import { ChevronDown, Loader2, Lock } from 'lucide-react';
 import { useBatch } from '@/contexts/BatchContext';
 import { listReportBatches, type ReportBatch } from '@/lib/api/batches';
 import { formatReportDate } from '@/lib/utils/date-formatting';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -125,9 +131,18 @@ export function BatchSwitcher() {
               {getStatusDisplayName(currentBatch.status)}
             </Badge>
             {isReadOnly && (
-              <Badge variant="destructive" className="text-xs">
-                read-only
-              </Badge>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div className="flex items-center" aria-label="Locked">
+                      <Lock className="h-4 w-4 text-muted-foreground" />
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Data locked for approval</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
             )}
           </div>
           <ChevronDown className="h-4 w-4 text-muted-foreground" />

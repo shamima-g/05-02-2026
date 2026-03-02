@@ -41,8 +41,7 @@
 - [ ] Given a batch is locked, when I view the global header active batch indicator, then I see "January 2026 | Locked" with a lock icon
 
 ### Multi-Batch Scenarios
-- [ ] Given I have January 2026 batch active (locked, in Level1Pending) and switch to December 2025 batch (unlocked, in Data Preparation), when I view file upload page, then upload buttons are enabled for December but would be disabled if I switch back to January
-- [ ] Given I am working on an unlocked batch (Dec 2025), when another user confirms a different batch (Jan 2026) causing it to lock, then my current batch (Dec 2025) remains unlocked (locks are batch-specific)
+> **Not applicable.** Per BR-GOV-006, only one batch may be in a non-Approved state at any time. The previous batch must be Approved before a new batch can be created. Multiple non-complete batches cannot exist simultaneously. Historical (Approved) batches are accessible in read-only mode only.
 
 ### Permission Override for Approvers
 - [ ] Given I am a Level 1 Approver viewing a batch in "Level1Pending", when I view the approval review page, then I can see all data in read-only mode (approvers cannot modify data even if they have other roles)
